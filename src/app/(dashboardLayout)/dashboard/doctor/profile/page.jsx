@@ -28,6 +28,10 @@ import {
     TextField,
 } from "@heroui/react";
 
+import { useSession } from "@/lib/auth-client";
+import { addDoctors } from "@/lib/api/doctors/action";
+import toast from "react-hot-toast";
+
 const DoctorProfileForm = () => {
     // ==========================================
     // States
@@ -39,6 +43,9 @@ const DoctorProfileForm = () => {
     const [daysOpen, setDaysOpen] = useState(false);
 
     const [selectedDays, setSelectedDays] = useState([]);
+
+    // Selected image file
+    const [photoFile, setPhotoFile] = useState(null);
 
     // ==========================================
     // Refs
@@ -75,6 +82,14 @@ const DoctorProfileForm = () => {
             ],
         },
     });
+
+    // ==========================================
+    // Session
+    // ==========================================
+
+    const { data: session } = useSession();
+
+    const userEmail = session?.user?.email;
 
     // ==========================================
     // Watch Specialization
@@ -123,7 +138,9 @@ const DoctorProfileForm = () => {
         const handleClickOutside = (event) => {
             if (
                 specializationRef.current &&
-                !specializationRef.current.contains(event.target)
+                !specializationRef.current.contains(
+                    event.target
+                )
             ) {
                 setSpecializationOpen(false);
             }
@@ -153,7 +170,9 @@ const DoctorProfileForm = () => {
     // Select Specialization
     // ==========================================
 
-    const handleSpecializationSelect = (specialization) => {
+    const handleSpecializationSelect = (
+        specialization
+    ) => {
         setValue(
             "specialization",
             specialization,
@@ -179,7 +198,10 @@ const DoctorProfileForm = () => {
                 (item) => item !== day
             );
         } else {
-            updatedDays = [...selectedDays, day];
+            updatedDays = [
+                ...selectedDays,
+                day,
+            ];
         }
 
         setSelectedDays(updatedDays);
@@ -196,22 +218,232 @@ const DoctorProfileForm = () => {
     };
 
     // ==========================================
+    // ImgBB Image Upload
+    // ==========================================
+
+    const uploadToImgBB = async (file) => {
+        if (!file) {
+            return "";
+        }
+
+        const apiKey =
+            process.env.NEXT_PUBLIC_IMGBB_API_KEY;
+
+        if (!apiKey) {
+            throw new Error(
+                "ImgBB API key is missing. Please add NEXT_PUBLIC_IMGBB_API_KEY to .env.local"
+            );
+        }
+
+        const formData = new FormData();
+
+        // Image file ImgBB-তে পাঠানো হচ্ছে
+        formData.append("image", file);
+
+        const response = await fetch(
+            `https://api.imgbb.com/1/upload?key=${apiKey}`,
+            {
+                method: "POST",
+                body: formData,
+            }
+        );
+
+        const data = await response.json();
+
+        console.log(
+            "ImgBB Response:",
+            data
+        );
+
+        // HTTP error
+        if (!response.ok) {
+            throw new Error(
+                data?.error?.message ||
+                    "ImgBB upload request failed"
+            );
+        }
+
+        // ImgBB upload failed
+        if (!data.success) {
+            throw new Error(
+                data?.error?.message ||
+                    "Image upload failed"
+            );
+        }
+
+        // ImgBB image URL
+        return data.data.url;
+    };
+
+    // ==========================================
+    // Image Select
+    // ==========================================
+
+    const handleImageChange = (event) => {
+        const file =
+            event.target.files?.[0];
+
+        if (!file) {
+            return;
+        }
+
+        // Optional image validation
+        if (!file.type.startsWith("image/")) {
+            alert(
+                "Please select a valid image file."
+            );
+
+            event.target.value = "";
+            return;
+        }
+
+        // Optional size validation
+        const maxSize =
+            5 * 1024 * 1024;
+
+        if (file.size > maxSize) {
+            alert(
+                "Image size must be less than 5MB."
+            );
+
+            event.target.value = "";
+            return;
+        }
+
+        setPhotoFile(file);
+
+        console.log(
+            "Selected File:",
+            file
+        );
+
+        console.log(
+            "File Name:",
+            file.name
+        );
+    };
+
+    // ==========================================
     // Submit
     // ==========================================
 
     const onSubmit = async (data) => {
         try {
+            // ==========================================
+            // Image URL
+            // ==========================================
+
+            let imageUrl = "";
+
+            // ==========================================
+            // Upload Image to ImgBB
+            // ==========================================
+
+            if (photoFile) {
+                console.log(
+                    "Uploading image:",
+                    photoFile.name
+                );
+
+                imageUrl =
+                    await uploadToImgBB(
+                        photoFile
+                    );
+
+                console.log(
+                    "ImgBB Image URL:",
+                    imageUrl
+                );
+            }
+
+            // ==========================================
+            // Final Doctor Profile Data
+            // ==========================================
+
+            const doctorProfile = {
+                availableDays:
+                    data.availableDays,
+
+                consultationFee:
+                    data.consultationFee,
+
+                doctorName:
+                    data.doctorName,
+
+                experience:
+                    data.experience,
+
+                hospitalName:
+                    data.hospitalName,
+
+                profileImage:
+                    imageUrl,
+
+                qualifications:
+                    data.qualifications,
+
+                specialization:
+                    data.specialization,
+
+                userEmail:
+                    userEmail,
+
+                availableSlots:
+                    data.availableSlots,
+            };
+
+            const resData = await addDoctors(doctorProfile)
+            console.log(resData);
+            if(resData.insertedId){
+                toast.success('doctor profile added ')
+            }
+
             console.log(
-                "Doctor Profile Data:",
-                data
+                "Final Doctor Profile:",
+                doctorProfile
             );
+
+            // ==========================================
+            // এখান থেকে তোমার Backend API call করবে
+            // ==========================================
+
+            // Example:
+            //
+            // const response = await fetch(
+            //     "http://localhost:7000/doctor-profile",
+            //     {
+            //         method: "POST",
+            //         headers: {
+            //             "Content-Type":
+            //                 "application/json",
+            //         },
+            //         body: JSON.stringify(
+            //             doctorProfile
+            //         ),
+            //     }
+            // );
+            //
+            // const result =
+            //     await response.json();
+            //
+            // console.log(result);
+
         } catch (error) {
             console.error(
                 "Doctor profile submission failed:",
                 error
             );
+
+            alert(
+                error.message ||
+                    "Failed to save doctor profile."
+            );
         }
     };
+
+    // ==========================================
+    // JSX
+    // ==========================================
 
     return (
         <div className="mx-auto w-full max-w-4xl">
@@ -251,7 +483,9 @@ const DoctorProfileForm = () => {
                     <TextField
                         isRequired
                         name="doctorName"
-                        isInvalid={!!errors.doctorName}
+                        isInvalid={
+                            !!errors.doctorName
+                        }
                     >
 
                         <Label className="text-sm text-[#064b78]">
@@ -263,15 +497,19 @@ const DoctorProfileForm = () => {
                             <Person className="pointer-events-none absolute left-3 top-1/2 z-10 h-4 w-4 -translate-y-1/2 text-gray-400" />
 
                             <Input
-                                {...register("doctorName", {
-                                    required:
-                                        "Doctor name is required",
-                                    minLength: {
-                                        value: 3,
-                                        message:
-                                            "Doctor name must be at least 3 characters",
-                                    },
-                                })}
+                                {...register(
+                                    "doctorName",
+                                    {
+                                        required:
+                                            "Doctor name is required",
+
+                                        minLength: {
+                                            value: 3,
+                                            message:
+                                                "Doctor name must be at least 3 characters",
+                                        },
+                                    }
+                                )}
                                 className="w-full pl-9"
                                 placeholder="Dr. John Doe"
                             />
@@ -280,7 +518,11 @@ const DoctorProfileForm = () => {
 
                         {errors.doctorName && (
                             <FieldError>
-                                {errors.doctorName.message}
+                                {
+                                    errors
+                                        .doctorName
+                                        .message
+                                }
                             </FieldError>
                         )}
 
@@ -292,7 +534,9 @@ const DoctorProfileForm = () => {
                     <TextField
                         isRequired
                         name="specialization"
-                        isInvalid={!!errors.specialization}
+                        isInvalid={
+                            !!errors.specialization
+                        }
                     >
 
                         <Label className="text-sm text-[#064b78]">
@@ -300,16 +544,13 @@ const DoctorProfileForm = () => {
                         </Label>
 
                         <div
-                            ref={specializationRef}
+                            ref={
+                                specializationRef
+                            }
                             className="relative"
                         >
 
                             <Stethoscope className="pointer-events-none absolute left-3 top-1/2 z-10 h-4 w-4 -translate-y-1/2 text-gray-400" />
-
-                            {/* IMPORTANT:
-                                value={specializationValue}
-                                added here
-                            */}
 
                             <Input
                                 {...register(
@@ -320,15 +561,18 @@ const DoctorProfileForm = () => {
                                     }
                                 )}
                                 value={
-                                    specializationValue || ""
+                                    specializationValue ||
+                                    ""
                                 }
                                 onChange={(e) => {
                                     setValue(
                                         "specialization",
                                         e.target.value,
                                         {
-                                            shouldValidate: true,
-                                            shouldDirty: true,
+                                            shouldValidate:
+                                                true,
+                                            shouldDirty:
+                                                true,
                                         }
                                     );
                                 }}
@@ -340,7 +584,8 @@ const DoctorProfileForm = () => {
                                 type="button"
                                 onClick={() =>
                                     setSpecializationOpen(
-                                        (prev) => !prev
+                                        (prev) =>
+                                            !prev
                                     )
                                 }
                                 className="absolute right-3 top-1/2 z-10 -translate-y-1/2 text-gray-400 transition hover:text-[#064b78]"
@@ -365,7 +610,9 @@ const DoctorProfileForm = () => {
                                     {specializationOptions.map(
                                         (item) => (
                                             <button
-                                                key={item}
+                                                key={
+                                                    item
+                                                }
                                                 type="button"
                                                 onClick={() =>
                                                     handleSpecializationSelect(
@@ -374,7 +621,9 @@ const DoctorProfileForm = () => {
                                                 }
                                                 className="w-full rounded-md px-3 py-2 text-left text-sm text-gray-700 transition hover:bg-[#eef5f8] hover:text-[#064b78]"
                                             >
-                                                {item}
+                                                {
+                                                    item
+                                                }
                                             </button>
                                         )
                                     )}
@@ -390,7 +639,11 @@ const DoctorProfileForm = () => {
 
                         {errors.specialization && (
                             <FieldError>
-                                {errors.specialization.message}
+                                {
+                                    errors
+                                        .specialization
+                                        .message
+                                }
                             </FieldError>
                         )}
 
@@ -402,7 +655,9 @@ const DoctorProfileForm = () => {
                     <TextField
                         isRequired
                         name="qualifications"
-                        isInvalid={!!errors.qualifications}
+                        isInvalid={
+                            !!errors.qualifications
+                        }
                     >
 
                         <Label className="text-sm text-[#064b78]">
@@ -429,7 +684,11 @@ const DoctorProfileForm = () => {
 
                         {errors.qualifications && (
                             <FieldError>
-                                {errors.qualifications.message}
+                                {
+                                    errors
+                                        .qualifications
+                                        .message
+                                }
                             </FieldError>
                         )}
 
@@ -445,7 +704,9 @@ const DoctorProfileForm = () => {
                         <TextField
                             isRequired
                             name="experience"
-                            isInvalid={!!errors.experience}
+                            isInvalid={
+                                !!errors.experience
+                            }
                         >
 
                             <Label className="text-sm text-[#064b78]">
@@ -462,6 +723,7 @@ const DoctorProfileForm = () => {
                                         {
                                             required:
                                                 "Experience is required",
+
                                             min: {
                                                 value: 0,
                                                 message:
@@ -483,7 +745,8 @@ const DoctorProfileForm = () => {
                             {errors.experience && (
                                 <FieldError>
                                     {
-                                        errors.experience
+                                        errors
+                                            .experience
                                             .message
                                     }
                                 </FieldError>
@@ -516,6 +779,7 @@ const DoctorProfileForm = () => {
                                         {
                                             required:
                                                 "Consultation fee is required",
+
                                             min: {
                                                 value: 0,
                                                 message:
@@ -554,7 +818,9 @@ const DoctorProfileForm = () => {
                     <TextField
                         isRequired
                         name="hospitalName"
-                        isInvalid={!!errors.hospitalName}
+                        isInvalid={
+                            !!errors.hospitalName
+                        }
                     >
 
                         <Label className="text-sm text-[#064b78]">
@@ -582,7 +848,8 @@ const DoctorProfileForm = () => {
                         {errors.hospitalName && (
                             <FieldError>
                                 {
-                                    errors.hospitalName
+                                    errors
+                                        .hospitalName
                                         .message
                                 }
                             </FieldError>
@@ -595,7 +862,9 @@ const DoctorProfileForm = () => {
 
                     <TextField
                         name="profileImage"
-                        isInvalid={!!errors.profileImage}
+                        isInvalid={
+                            !!errors.profileImage
+                        }
                     >
 
                         <Label className="text-sm text-[#064b78]">
@@ -606,19 +875,51 @@ const DoctorProfileForm = () => {
 
                             <Picture className="pointer-events-none absolute left-3 top-1/2 z-10 h-4 w-4 -translate-y-1/2 text-gray-400" />
 
-                            <Input
-                                {...register(
-                                    "profileImage"
-                                )}
-                                className="w-full pl-9"
-                                placeholder="https://example.com/doctor.jpg"
+                            {/* Native File Input */}
+
+                            <input
+                                type="file"
+                                accept="image/*"
+                                onChange={
+                                    handleImageChange
+                                }
+                                className="h-10 w-full cursor-pointer rounded-lg border border-gray-200 bg-white pl-10 pr-3 text-sm text-gray-600 file:mr-3 file:cursor-pointer file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-[#064b78]"
                             />
 
                         </div>
 
+
+                        {/* Selected File Name */}
+
+                        {photoFile && (
+                            <p className="mt-1 text-xs text-gray-500">
+
+                                Selected:{" "}
+
+                                <span className="font-medium text-[#064b78]">
+                                    {
+                                        photoFile.name
+                                    }
+                                </span>
+
+                            </p>
+                        )}
+
+
                         <Description>
-                            Enter your profile image URL
+                            Upload your profile photo
+                            (Maximum 5MB)
                         </Description>
+
+                        {errors.profileImage && (
+                            <FieldError>
+                                {
+                                    errors
+                                        .profileImage
+                                        .message
+                                }
+                            </FieldError>
+                        )}
 
                     </TextField>
 
@@ -642,18 +943,22 @@ const DoctorProfileForm = () => {
                                 type="button"
                                 onClick={() =>
                                     setDaysOpen(
-                                        (prev) => !prev
+                                        (prev) =>
+                                            !prev
                                     )
                                 }
                                 className="flex min-h-10 w-full items-center justify-between rounded-lg border border-gray-200 bg-white py-2 pl-9 pr-3 text-left text-sm text-gray-700 outline-none transition hover:border-[#064b78]"
                             >
 
                                 <span className="truncate">
-                                    {selectedDays.length > 0
+
+                                    {selectedDays.length >
+                                    0
                                         ? selectedDays.join(
                                               ", "
                                           )
                                         : "Select available days"}
+
                                 </span>
 
                                 <ArrowChevronDown
@@ -672,40 +977,45 @@ const DoctorProfileForm = () => {
                             {daysOpen && (
                                 <div className="absolute left-0 right-0 top-[calc(100%+5px)] z-30 rounded-lg border border-gray-200 bg-white p-1.5 shadow-lg">
 
-                                    {days.map((day) => {
+                                    {days.map(
+                                        (day) => {
+                                            const selected =
+                                                selectedDays.includes(
+                                                    day
+                                                );
 
-                                        const selected =
-                                            selectedDays.includes(
-                                                day
-                                            );
-
-                                        return (
-                                            <button
-                                                key={day}
-                                                type="button"
-                                                onClick={() =>
-                                                    handleDaySelect(
+                                            return (
+                                                <button
+                                                    key={
                                                         day
-                                                    )
-                                                }
-                                                className={`flex w-full items-center justify-between rounded-md px-3 py-2 text-left text-sm transition ${
-                                                    selected
-                                                        ? "bg-[#eef5f8] text-[#064b78]"
-                                                        : "text-gray-700 hover:bg-gray-50"
-                                                }`}
-                                            >
+                                                    }
+                                                    type="button"
+                                                    onClick={() =>
+                                                        handleDaySelect(
+                                                            day
+                                                        )
+                                                    }
+                                                    className={`flex w-full items-center justify-between rounded-md px-3 py-2 text-left text-sm transition ${
+                                                        selected
+                                                            ? "bg-[#eef5f8] text-[#064b78]"
+                                                            : "text-gray-700 hover:bg-gray-50"
+                                                    }`}
+                                                >
 
-                                                <span>
-                                                    {day}
-                                                </span>
+                                                    <span>
+                                                        {
+                                                            day
+                                                        }
+                                                    </span>
 
-                                                {selected && (
-                                                    <Check className="h-4 w-4" />
-                                                )}
+                                                    {selected && (
+                                                        <Check className="h-4 w-4" />
+                                                    )}
 
-                                            </button>
-                                        );
-                                    })}
+                                                </button>
+                                            );
+                                        }
+                                    )}
 
                                 </div>
                             )}
@@ -720,9 +1030,11 @@ const DoctorProfileForm = () => {
                             {...register(
                                 "availableDays",
                                 {
-                                    validate: (value) =>
-                                        value?.length > 0 ||
-                                        "Please select at least one available day",
+                                    validate:
+                                        (value) =>
+                                            value?.length >
+                                                0 ||
+                                            "Please select at least one available day",
                                 }
                             )}
                         />
@@ -730,22 +1042,28 @@ const DoctorProfileForm = () => {
 
                         {/* Selected Days */}
 
-                        {selectedDays.length > 0 && (
+                        {selectedDays.length >
+                            0 && (
                             <div className="flex flex-wrap gap-1.5 pt-1">
 
                                 {selectedDays.map(
                                     (day) => (
                                         <span
-                                            key={day}
+                                            key={
+                                                day
+                                            }
                                             className="rounded-full bg-[#eef5f8] px-2.5 py-1 text-xs font-medium text-[#064b78]"
                                         >
-                                            {day}
+                                            {
+                                                day
+                                            }
                                         </span>
                                     )
                                 )}
 
                             </div>
                         )}
+
 
                         <Description>
                             Select one or more days when
@@ -755,7 +1073,8 @@ const DoctorProfileForm = () => {
                         {errors.availableDays && (
                             <FieldError>
                                 {
-                                    errors.availableDays
+                                    errors
+                                        .availableDays
                                         .message
                                 }
                             </FieldError>
