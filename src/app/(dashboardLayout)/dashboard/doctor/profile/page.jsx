@@ -29,8 +29,9 @@ import {
 } from "@heroui/react";
 
 import { useSession } from "@/lib/auth-client";
-import { addDoctors } from "@/lib/api/doctors/action";
+import { addDoctors, upDateDoctors } from "@/lib/api/doctors/action";
 import toast from "react-hot-toast";
+import { doctorProfile } from "@/lib/api/doctors/data";
 
 const DoctorProfileForm = () => {
     // ==========================================
@@ -44,8 +45,10 @@ const DoctorProfileForm = () => {
 
     const [selectedDays, setSelectedDays] = useState([]);
 
-    // Selected image file
     const [photoFile, setPhotoFile] = useState(null);
+
+    // Existing doctor data
+    const [doctor, setDoctor] = useState(null);
 
     // ==========================================
     // Refs
@@ -63,6 +66,7 @@ const DoctorProfileForm = () => {
         handleSubmit,
         setValue,
         watch,
+        reset,
         formState: { errors },
     } = useForm({
         defaultValues: {
@@ -92,10 +96,83 @@ const DoctorProfileForm = () => {
     const userEmail = session?.user?.email;
 
     // ==========================================
+    // Get Existing Doctor Profile
+    // ==========================================
+
+    useEffect(() => {
+        if (!userEmail) return;
+
+        const getDoctorData = async () => {
+            try {
+                const datas = await doctorProfile(userEmail);
+
+                console.log("Doctor profile:", datas);
+
+                if (datas) {
+                    // Store doctor data
+                    setDoctor(datas);
+
+                    // Populate React Hook Form
+                    reset({
+                        doctorName: datas.doctorName || "",
+
+                        specialization:
+                            datas.specialization || "",
+
+                        qualifications:
+                            datas.qualifications || "",
+
+                        experience:
+                            datas.experience || "",
+
+                        consultationFee:
+                            datas.consultationFee || "",
+
+                        hospitalName:
+                            datas.hospitalName || "",
+
+                        profileImage:
+                            datas.profileImage || "",
+
+                        availableDays:
+                            datas.availableDays || [],
+
+                        availableSlots:
+                            datas.availableSlots || [
+                                {
+                                    startTime: "",
+                                    endTime: "",
+                                },
+                            ],
+                    });
+
+                    // Populate selected days UI
+                    setSelectedDays(
+                        datas.availableDays || []
+                    );
+                } else {
+                    // No doctor profile found
+                    setDoctor(null);
+
+                    setSelectedDays([]);
+                }
+            } catch (error) {
+                console.error(
+                    "Failed to load doctor profile:",
+                    error
+                );
+            }
+        };
+
+        getDoctorData();
+    }, [userEmail, reset]);
+
+    // ==========================================
     // Watch Specialization
     // ==========================================
 
-    const specializationValue = watch("specialization");
+    const specializationValue =
+        watch("specialization");
 
     // ==========================================
     // Specialization Options
@@ -237,7 +314,6 @@ const DoctorProfileForm = () => {
 
         const formData = new FormData();
 
-        // Image file ImgBB-তে পাঠানো হচ্ছে
         formData.append("image", file);
 
         const response = await fetch(
@@ -255,23 +331,20 @@ const DoctorProfileForm = () => {
             data
         );
 
-        // HTTP error
         if (!response.ok) {
             throw new Error(
                 data?.error?.message ||
-                    "ImgBB upload request failed"
+                "ImgBB upload request failed"
             );
         }
 
-        // ImgBB upload failed
         if (!data.success) {
             throw new Error(
                 data?.error?.message ||
-                    "Image upload failed"
+                "Image upload failed"
             );
         }
 
-        // ImgBB image URL
         return data.data.url;
     };
 
@@ -287,7 +360,6 @@ const DoctorProfileForm = () => {
             return;
         }
 
-        // Optional image validation
         if (!file.type.startsWith("image/")) {
             alert(
                 "Please select a valid image file."
@@ -297,7 +369,6 @@ const DoctorProfileForm = () => {
             return;
         }
 
-        // Optional size validation
         const maxSize =
             5 * 1024 * 1024;
 
@@ -333,10 +404,11 @@ const DoctorProfileForm = () => {
             // Image URL
             // ==========================================
 
-            let imageUrl = "";
+            let imageUrl =
+                doctor?.profileImage || "";
 
             // ==========================================
-            // Upload Image to ImgBB
+            // Upload New Image
             // ==========================================
 
             if (photoFile) {
@@ -360,7 +432,7 @@ const DoctorProfileForm = () => {
             // Final Doctor Profile Data
             // ==========================================
 
-            const doctorProfile = {
+            const doctorProfileData = {
                 availableDays:
                     data.availableDays,
 
@@ -385,49 +457,122 @@ const DoctorProfileForm = () => {
                 specialization:
                     data.specialization,
 
-                userEmail:
+                doctorsEmail:
                     userEmail,
 
                 availableSlots:
                     data.availableSlots,
             };
 
-            const resData = await addDoctors(doctorProfile)
-            console.log(resData);
-            if(resData.insertedId){
-                toast.success('doctor profile added ')
-            }
-
             console.log(
                 "Final Doctor Profile:",
-                doctorProfile
+                doctorProfileData
             );
 
             // ==========================================
-            // এখান থেকে তোমার Backend API call করবে
+            // ADD NEW DOCTOR
             // ==========================================
 
-            // Example:
-            //
-            // const response = await fetch(
-            //     "http://localhost:7000/doctor-profile",
-            //     {
-            //         method: "POST",
-            //         headers: {
-            //             "Content-Type":
-            //                 "application/json",
-            //         },
-            //         body: JSON.stringify(
-            //             doctorProfile
-            //         ),
-            //     }
-            // );
-            //
-            // const result =
-            //     await response.json();
-            //
-            // console.log(result);
+            if (!doctor) {
+                const resData =
+                    await addDoctors(
+                        doctorProfileData
+                    );
 
+                console.log(
+                    "Add Doctor Response:",
+                    resData
+                );
+
+                if (resData?.insertedId) {
+                    toast.success(
+                        "Doctor profile added successfully"
+                    );
+
+                    // After POST, GET again
+                    const newDoctor =
+                        await doctorProfile(
+                            userEmail
+                        );
+
+                    if (newDoctor) {
+                        setDoctor(newDoctor);
+
+                        reset({
+                            doctorName:
+                                newDoctor.doctorName || "",
+
+                            specialization:
+                                newDoctor.specialization || "",
+
+                            qualifications:
+                                newDoctor.qualifications || "",
+
+                            experience:
+                                newDoctor.experience || "",
+
+                            consultationFee:
+                                newDoctor.consultationFee || "",
+
+                            hospitalName:
+                                newDoctor.hospitalName || "",
+
+                            profileImage:
+                                newDoctor.profileImage || "",
+
+                            availableDays:
+                                newDoctor.availableDays || [],
+
+                            availableSlots:
+                                newDoctor.availableSlots || [
+                                    {
+                                        startTime: "",
+                                        endTime: "",
+                                    },
+                                ],
+                        });
+
+                        setSelectedDays(
+                            newDoctor.availableDays || []
+                        );
+                    }
+                }
+            }
+
+            // ==========================================
+            // UPDATE EXISTING DOCTOR
+            // ==========================================
+
+            else {
+                const updateRes =
+                    await upDateDoctors(
+                        doctorProfileData,
+                        doctor._id
+                    );
+
+                console.log(
+                    "Update Doctor Response:",
+                    updateRes
+                );
+
+                if (
+                    updateRes?.modifiedCount > 0 ||
+                    updateRes?.matchedCount > 0
+                ) {
+                    toast.success(
+                        "Doctor profile updated successfully"
+                    );
+
+                    // Update local doctor state
+                    setDoctor({
+                        ...doctor,
+                        ...doctorProfileData,
+                    });
+
+                    // Clear selected file
+                    setPhotoFile(null);
+                }
+            }
         } catch (error) {
             console.error(
                 "Doctor profile submission failed:",
@@ -436,7 +581,7 @@ const DoctorProfileForm = () => {
 
             alert(
                 error.message ||
-                    "Failed to save doctor profile."
+                "Failed to save doctor profile."
             );
         }
     };
@@ -448,9 +593,7 @@ const DoctorProfileForm = () => {
     return (
         <div className="mx-auto w-full max-w-4xl">
 
-            {/* ==========================================
-                HEADER
-            ========================================== */}
+            {/* HEADER */}
 
             <div className="mb-6">
 
@@ -466,10 +609,7 @@ const DoctorProfileForm = () => {
 
             </div>
 
-
-            {/* ==========================================
-                FORM CARD
-            ========================================== */}
+            {/* FORM CARD */}
 
             <div className="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm sm:p-7">
 
@@ -478,7 +618,7 @@ const DoctorProfileForm = () => {
                     onSubmit={handleSubmit(onSubmit)}
                 >
 
-                    {/* ================= DOCTOR NAME ================= */}
+                    {/* DOCTOR NAME */}
 
                     <TextField
                         isRequired
@@ -529,7 +669,7 @@ const DoctorProfileForm = () => {
                     </TextField>
 
 
-                    {/* ================= SPECIALIZATION ================= */}
+                    {/* SPECIALIZATION */}
 
                     <TextField
                         isRequired
@@ -601,9 +741,6 @@ const DoctorProfileForm = () => {
 
                             </button>
 
-
-                            {/* Specialization Dropdown */}
-
                             {specializationOpen && (
                                 <div className="absolute left-0 right-0 top-[calc(100%+5px)] z-30 max-h-52 overflow-y-auto rounded-lg border border-gray-200 bg-white p-1 shadow-lg">
 
@@ -650,7 +787,7 @@ const DoctorProfileForm = () => {
                     </TextField>
 
 
-                    {/* ================= QUALIFICATIONS ================= */}
+                    {/* QUALIFICATIONS */}
 
                     <TextField
                         isRequired
@@ -695,7 +832,7 @@ const DoctorProfileForm = () => {
                     </TextField>
 
 
-                    {/* ================= EXPERIENCE + FEE ================= */}
+                    {/* EXPERIENCE + FEE */}
 
                     <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
 
@@ -813,7 +950,7 @@ const DoctorProfileForm = () => {
                     </div>
 
 
-                    {/* ================= HOSPITAL ================= */}
+                    {/* HOSPITAL */}
 
                     <TextField
                         isRequired
@@ -858,7 +995,7 @@ const DoctorProfileForm = () => {
                     </TextField>
 
 
-                    {/* ================= PROFILE IMAGE ================= */}
+                    {/* PROFILE IMAGE */}
 
                     <TextField
                         name="profileImage"
@@ -875,8 +1012,6 @@ const DoctorProfileForm = () => {
 
                             <Picture className="pointer-events-none absolute left-3 top-1/2 z-10 h-4 w-4 -translate-y-1/2 text-gray-400" />
 
-                            {/* Native File Input */}
-
                             <input
                                 type="file"
                                 accept="image/*"
@@ -888,8 +1023,16 @@ const DoctorProfileForm = () => {
 
                         </div>
 
+                        {/* Existing Image */}
 
-                        {/* Selected File Name */}
+                        {doctor?.profileImage &&
+                            !photoFile && (
+                                <p className="mt-1 text-xs text-gray-500">
+                                    Existing profile image is already saved.
+                                </p>
+                            )}
+
+                        {/* Selected File */}
 
                         {photoFile && (
                             <p className="mt-1 text-xs text-gray-500">
@@ -904,7 +1047,6 @@ const DoctorProfileForm = () => {
 
                             </p>
                         )}
-
 
                         <Description>
                             Upload your profile photo
@@ -924,7 +1066,7 @@ const DoctorProfileForm = () => {
                     </TextField>
 
 
-                    {/* ================= AVAILABLE DAYS ================= */}
+                    {/* AVAILABLE DAYS */}
 
                     <div
                         ref={daysRef}
@@ -953,10 +1095,10 @@ const DoctorProfileForm = () => {
                                 <span className="truncate">
 
                                     {selectedDays.length >
-                                    0
+                                        0
                                         ? selectedDays.join(
-                                              ", "
-                                          )
+                                            ", "
+                                        )
                                         : "Select available days"}
 
                                 </span>
@@ -970,9 +1112,6 @@ const DoctorProfileForm = () => {
                                 />
 
                             </button>
-
-
-                            {/* Days Dropdown */}
 
                             {daysOpen && (
                                 <div className="absolute left-0 right-0 top-[calc(100%+5px)] z-30 rounded-lg border border-gray-200 bg-white p-1.5 shadow-lg">
@@ -1022,9 +1161,6 @@ const DoctorProfileForm = () => {
 
                         </div>
 
-
-                        {/* Hidden RHF field */}
-
                         <input
                             type="hidden"
                             {...register(
@@ -1039,31 +1175,27 @@ const DoctorProfileForm = () => {
                             )}
                         />
 
-
-                        {/* Selected Days */}
-
                         {selectedDays.length >
                             0 && (
-                            <div className="flex flex-wrap gap-1.5 pt-1">
+                                <div className="flex flex-wrap gap-1.5 pt-1">
 
-                                {selectedDays.map(
-                                    (day) => (
-                                        <span
-                                            key={
-                                                day
-                                            }
-                                            className="rounded-full bg-[#eef5f8] px-2.5 py-1 text-xs font-medium text-[#064b78]"
-                                        >
-                                            {
-                                                day
-                                            }
-                                        </span>
-                                    )
-                                )}
+                                    {selectedDays.map(
+                                        (day) => (
+                                            <span
+                                                key={
+                                                    day
+                                                }
+                                                className="rounded-full bg-[#eef5f8] px-2.5 py-1 text-xs font-medium text-[#064b78]"
+                                            >
+                                                {
+                                                    day
+                                                }
+                                            </span>
+                                        )
+                                    )}
 
-                            </div>
-                        )}
-
+                                </div>
+                            )}
 
                         <Description>
                             Select one or more days when
@@ -1083,16 +1215,13 @@ const DoctorProfileForm = () => {
                     </div>
 
 
-                    {/* ================= AVAILABLE TIME SLOT ================= */}
+                    {/* AVAILABLE TIME SLOT */}
 
                     <div className="flex flex-col gap-3">
 
                         <Label className="text-sm text-[#064b78]">
                             Available Time Slot
                         </Label>
-
-
-                        {/* SINGLE SLOT */}
 
                         <div className="rounded-xl border border-gray-200 p-3.5">
 
@@ -1105,7 +1234,6 @@ const DoctorProfileForm = () => {
                                 </span>
 
                             </div>
-
 
                             <div className="grid grid-cols-2 gap-3">
 
@@ -1157,7 +1285,7 @@ const DoctorProfileForm = () => {
                     </div>
 
 
-                    {/* ================= SUBMIT ================= */}
+                    {/* SUBMIT */}
 
                     <div className="mt-2 flex justify-end border-t border-gray-100 pt-5">
 
@@ -1168,7 +1296,9 @@ const DoctorProfileForm = () => {
 
                             <Check className="h-4 w-4" />
 
-                            Save Doctor Profile
+                            {doctor
+                                ? "Update Doctor Profile"
+                                : "Save Doctor Profile"}
 
                         </Button>
 
