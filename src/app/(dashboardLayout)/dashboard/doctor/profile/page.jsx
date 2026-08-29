@@ -6,10 +6,8 @@ import { useEffect, useRef, useState } from "react";
 
 import {
     Briefcase,
-    Calendar,
     Check,
     CircleDollar,
-    Clock,
     Factory,
     GraduationCap,
     Person,
@@ -29,7 +27,11 @@ import {
 } from "@heroui/react";
 
 import { useSession } from "@/lib/auth-client";
-import { addDoctors, upDateDoctors } from "@/lib/api/doctors/action";
+import {
+    addDoctors,
+    upDateDoctors,
+} from "@/lib/api/doctors/action";
+
 import toast from "react-hot-toast";
 import { doctorProfile } from "@/lib/api/doctors/data";
 
@@ -41,10 +43,6 @@ const DoctorProfileForm = () => {
     const [specializationOpen, setSpecializationOpen] =
         useState(false);
 
-    const [daysOpen, setDaysOpen] = useState(false);
-
-    const [selectedDays, setSelectedDays] = useState([]);
-
     const [photoFile, setPhotoFile] = useState(null);
 
     // Existing doctor data
@@ -55,7 +53,6 @@ const DoctorProfileForm = () => {
     // ==========================================
 
     const specializationRef = useRef(null);
-    const daysRef = useRef(null);
 
     // ==========================================
     // React Hook Form
@@ -77,13 +74,6 @@ const DoctorProfileForm = () => {
             consultationFee: "",
             hospitalName: "",
             profileImage: "",
-            availableDays: [],
-            availableSlots: [
-                {
-                    startTime: "",
-                    endTime: "",
-                },
-            ],
         },
     });
 
@@ -109,12 +99,13 @@ const DoctorProfileForm = () => {
                 console.log("Doctor profile:", datas);
 
                 if (datas) {
-                    // Store doctor data
+                    // Save existing doctor data
                     setDoctor(datas);
 
-                    // Populate React Hook Form
+                    // Put database data into form
                     reset({
-                        doctorName: datas.doctorName || "",
+                        doctorName:
+                            datas.doctorName || "",
 
                         specialization:
                             datas.specialization || "",
@@ -133,28 +124,10 @@ const DoctorProfileForm = () => {
 
                         profileImage:
                             datas.profileImage || "",
-
-                        availableDays:
-                            datas.availableDays || [],
-
-                        availableSlots:
-                            datas.availableSlots || [
-                                {
-                                    startTime: "",
-                                    endTime: "",
-                                },
-                            ],
                     });
-
-                    // Populate selected days UI
-                    setSelectedDays(
-                        datas.availableDays || []
-                    );
                 } else {
-                    // No doctor profile found
+                    // No doctor profile
                     setDoctor(null);
-
-                    setSelectedDays([]);
                 }
             } catch (error) {
                 console.error(
@@ -194,20 +167,6 @@ const DoctorProfileForm = () => {
     ];
 
     // ==========================================
-    // Available Days
-    // ==========================================
-
-    const days = [
-        "Saturday",
-        "Sunday",
-        "Monday",
-        "Tuesday",
-        "Wednesday",
-        "Thursday",
-        "Friday",
-    ];
-
-    // ==========================================
     // Outside Click
     // ==========================================
 
@@ -220,13 +179,6 @@ const DoctorProfileForm = () => {
                 )
             ) {
                 setSpecializationOpen(false);
-            }
-
-            if (
-                daysRef.current &&
-                !daysRef.current.contains(event.target)
-            ) {
-                setDaysOpen(false);
             }
         };
 
@@ -264,37 +216,6 @@ const DoctorProfileForm = () => {
     };
 
     // ==========================================
-    // Select Available Day
-    // ==========================================
-
-    const handleDaySelect = (day) => {
-        let updatedDays;
-
-        if (selectedDays.includes(day)) {
-            updatedDays = selectedDays.filter(
-                (item) => item !== day
-            );
-        } else {
-            updatedDays = [
-                ...selectedDays,
-                day,
-            ];
-        }
-
-        setSelectedDays(updatedDays);
-
-        setValue(
-            "availableDays",
-            updatedDays,
-            {
-                shouldValidate: true,
-                shouldDirty: true,
-                shouldTouch: true,
-            }
-        );
-    };
-
-    // ==========================================
     // ImgBB Image Upload
     // ==========================================
 
@@ -326,22 +247,19 @@ const DoctorProfileForm = () => {
 
         const data = await response.json();
 
-        console.log(
-            "ImgBB Response:",
-            data
-        );
+        console.log("ImgBB Response:", data);
 
         if (!response.ok) {
             throw new Error(
                 data?.error?.message ||
-                "ImgBB upload request failed"
+                    "ImgBB upload request failed"
             );
         }
 
         if (!data.success) {
             throw new Error(
                 data?.error?.message ||
-                "Image upload failed"
+                    "Image upload failed"
             );
         }
 
@@ -360,6 +278,7 @@ const DoctorProfileForm = () => {
             return;
         }
 
+        // Check image type
         if (!file.type.startsWith("image/")) {
             alert(
                 "Please select a valid image file."
@@ -369,6 +288,7 @@ const DoctorProfileForm = () => {
             return;
         }
 
+        // Maximum 5MB
         const maxSize =
             5 * 1024 * 1024;
 
@@ -401,7 +321,7 @@ const DoctorProfileForm = () => {
     const onSubmit = async (data) => {
         try {
             // ==========================================
-            // Image URL
+            // Existing Image
             // ==========================================
 
             let imageUrl =
@@ -433,9 +353,6 @@ const DoctorProfileForm = () => {
             // ==========================================
 
             const doctorProfileData = {
-                availableDays:
-                    data.availableDays,
-
                 consultationFee:
                     data.consultationFee,
 
@@ -459,9 +376,6 @@ const DoctorProfileForm = () => {
 
                 doctorsEmail:
                     userEmail,
-
-                availableSlots:
-                    data.availableSlots,
             };
 
             console.log(
@@ -489,7 +403,10 @@ const DoctorProfileForm = () => {
                         "Doctor profile added successfully"
                     );
 
-                    // After POST, GET again
+                    // ==========================================
+                    // GET AGAIN AFTER POST
+                    // ==========================================
+
                     const newDoctor =
                         await doctorProfile(
                             userEmail
@@ -500,41 +417,35 @@ const DoctorProfileForm = () => {
 
                         reset({
                             doctorName:
-                                newDoctor.doctorName || "",
+                                newDoctor.doctorName ||
+                                "",
 
                             specialization:
-                                newDoctor.specialization || "",
+                                newDoctor.specialization ||
+                                "",
 
                             qualifications:
-                                newDoctor.qualifications || "",
+                                newDoctor.qualifications ||
+                                "",
 
                             experience:
-                                newDoctor.experience || "",
+                                newDoctor.experience ||
+                                "",
 
                             consultationFee:
-                                newDoctor.consultationFee || "",
+                                newDoctor.consultationFee ||
+                                "",
 
                             hospitalName:
-                                newDoctor.hospitalName || "",
+                                newDoctor.hospitalName ||
+                                "",
 
                             profileImage:
-                                newDoctor.profileImage || "",
-
-                            availableDays:
-                                newDoctor.availableDays || [],
-
-                            availableSlots:
-                                newDoctor.availableSlots || [
-                                    {
-                                        startTime: "",
-                                        endTime: "",
-                                    },
-                                ],
+                                newDoctor.profileImage ||
+                                "",
                         });
 
-                        setSelectedDays(
-                            newDoctor.availableDays || []
-                        );
+                        setPhotoFile(null);
                     }
                 }
             }
@@ -563,13 +474,13 @@ const DoctorProfileForm = () => {
                         "Doctor profile updated successfully"
                     );
 
-                    // Update local doctor state
+                    // Update local state
                     setDoctor({
                         ...doctor,
                         ...doctorProfileData,
                     });
 
-                    // Clear selected file
+                    // Clear selected image
                     setPhotoFile(null);
                 }
             }
@@ -581,7 +492,7 @@ const DoctorProfileForm = () => {
 
             alert(
                 error.message ||
-                "Failed to save doctor profile."
+                    "Failed to save doctor profile."
             );
         }
     };
@@ -603,8 +514,7 @@ const DoctorProfileForm = () => {
 
                 <p className="mt-1.5 text-sm text-gray-500">
                     Add and manage your professional
-                    information, consultation details and
-                    availability.
+                    information and consultation details.
                 </p>
 
             </div>
@@ -712,6 +622,8 @@ const DoctorProfileForm = () => {
                                             shouldValidate:
                                                 true,
                                             shouldDirty:
+                                                true,
+                                            shouldTouch:
                                                 true,
                                         }
                                     );
@@ -836,7 +748,7 @@ const DoctorProfileForm = () => {
 
                     <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
 
-                        {/* Experience */}
+                        {/* EXPERIENCE */}
 
                         <TextField
                             isRequired
@@ -892,7 +804,7 @@ const DoctorProfileForm = () => {
                         </TextField>
 
 
-                        {/* Consultation Fee */}
+                        {/* CONSULTATION FEE */}
 
                         <TextField
                             isRequired
@@ -1053,236 +965,7 @@ const DoctorProfileForm = () => {
                             (Maximum 5MB)
                         </Description>
 
-                        {errors.profileImage && (
-                            <FieldError>
-                                {
-                                    errors
-                                        .profileImage
-                                        .message
-                                }
-                            </FieldError>
-                        )}
-
                     </TextField>
-
-
-                    {/* AVAILABLE DAYS */}
-
-                    <div
-                        ref={daysRef}
-                        className="flex flex-col gap-2"
-                    >
-
-                        <Label className="text-sm text-[#064b78]">
-                            Available Days
-                        </Label>
-
-                        <div className="relative">
-
-                            <Calendar className="pointer-events-none absolute left-3 top-3 z-10 h-4 w-4 text-gray-400" />
-
-                            <button
-                                type="button"
-                                onClick={() =>
-                                    setDaysOpen(
-                                        (prev) =>
-                                            !prev
-                                    )
-                                }
-                                className="flex min-h-10 w-full items-center justify-between rounded-lg border border-gray-200 bg-white py-2 pl-9 pr-3 text-left text-sm text-gray-700 outline-none transition hover:border-[#064b78]"
-                            >
-
-                                <span className="truncate">
-
-                                    {selectedDays.length >
-                                        0
-                                        ? selectedDays.join(
-                                            ", "
-                                        )
-                                        : "Select available days"}
-
-                                </span>
-
-                                <ArrowChevronDown
-                                    className={`ml-2 h-4 w-4 shrink-0 text-gray-400 transition-transform ${
-                                        daysOpen
-                                            ? "rotate-180"
-                                            : ""
-                                    }`}
-                                />
-
-                            </button>
-
-                            {daysOpen && (
-                                <div className="absolute left-0 right-0 top-[calc(100%+5px)] z-30 rounded-lg border border-gray-200 bg-white p-1.5 shadow-lg">
-
-                                    {days.map(
-                                        (day) => {
-                                            const selected =
-                                                selectedDays.includes(
-                                                    day
-                                                );
-
-                                            return (
-                                                <button
-                                                    key={
-                                                        day
-                                                    }
-                                                    type="button"
-                                                    onClick={() =>
-                                                        handleDaySelect(
-                                                            day
-                                                        )
-                                                    }
-                                                    className={`flex w-full items-center justify-between rounded-md px-3 py-2 text-left text-sm transition ${
-                                                        selected
-                                                            ? "bg-[#eef5f8] text-[#064b78]"
-                                                            : "text-gray-700 hover:bg-gray-50"
-                                                    }`}
-                                                >
-
-                                                    <span>
-                                                        {
-                                                            day
-                                                        }
-                                                    </span>
-
-                                                    {selected && (
-                                                        <Check className="h-4 w-4" />
-                                                    )}
-
-                                                </button>
-                                            );
-                                        }
-                                    )}
-
-                                </div>
-                            )}
-
-                        </div>
-
-                        <input
-                            type="hidden"
-                            {...register(
-                                "availableDays",
-                                {
-                                    validate:
-                                        (value) =>
-                                            value?.length >
-                                                0 ||
-                                            "Please select at least one available day",
-                                }
-                            )}
-                        />
-
-                        {selectedDays.length >
-                            0 && (
-                                <div className="flex flex-wrap gap-1.5 pt-1">
-
-                                    {selectedDays.map(
-                                        (day) => (
-                                            <span
-                                                key={
-                                                    day
-                                                }
-                                                className="rounded-full bg-[#eef5f8] px-2.5 py-1 text-xs font-medium text-[#064b78]"
-                                            >
-                                                {
-                                                    day
-                                                }
-                                            </span>
-                                        )
-                                    )}
-
-                                </div>
-                            )}
-
-                        <Description>
-                            Select one or more days when
-                            you are available.
-                        </Description>
-
-                        {errors.availableDays && (
-                            <FieldError>
-                                {
-                                    errors
-                                        .availableDays
-                                        .message
-                                }
-                            </FieldError>
-                        )}
-
-                    </div>
-
-
-                    {/* AVAILABLE TIME SLOT */}
-
-                    <div className="flex flex-col gap-3">
-
-                        <Label className="text-sm text-[#064b78]">
-                            Available Time Slot
-                        </Label>
-
-                        <div className="rounded-xl border border-gray-200 p-3.5">
-
-                            <div className="mb-3 flex items-center gap-2">
-
-                                <Clock className="h-4 w-4 text-gray-400" />
-
-                                <span className="text-sm font-medium text-[#064b78]">
-                                    Consultation Hours
-                                </span>
-
-                            </div>
-
-                            <div className="grid grid-cols-2 gap-3">
-
-                                {/* Start Time */}
-
-                                <div>
-
-                                    <Label className="mb-1 block text-xs text-gray-500">
-                                        Start Time
-                                    </Label>
-
-                                    <Input
-                                        {...register(
-                                            "availableSlots.0.startTime"
-                                        )}
-                                        type="time"
-                                        className="w-full"
-                                    />
-
-                                </div>
-
-
-                                {/* End Time */}
-
-                                <div>
-
-                                    <Label className="mb-1 block text-xs text-gray-500">
-                                        End Time
-                                    </Label>
-
-                                    <Input
-                                        {...register(
-                                            "availableSlots.0.endTime"
-                                        )}
-                                        type="time"
-                                        className="w-full"
-                                    />
-
-                                </div>
-
-                            </div>
-
-                        </div>
-
-                        <Description>
-                            Add your available consultation hours.
-                        </Description>
-
-                    </div>
 
 
                     {/* SUBMIT */}
