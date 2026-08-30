@@ -5,3 +5,8 @@ export const doctorProfile = async(email)=>{
     console.log(result);
     return result
 }
+export const scheduleDetails = async(email)=>{
+    const result = await serverfetch(`/api/doctors/${email}/schedule`)
+    console.log(result);
+    return result
+}

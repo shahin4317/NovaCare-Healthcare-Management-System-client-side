@@ -3,16 +3,18 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import logo from '@/image/logo.png'
 
 import {
   ArrowChevronDown,
   Bars,
   Xmark,
-  Person,
+
   ArrowRightFromSquare,
 } from "@gravity-ui/icons";
 
 import { authClient } from "@/lib/auth-client";
+import Image from "next/image";
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -58,18 +60,13 @@ const Navbar = () => {
   return (
     <nav className="relative z-50 h-[70px] w-full border-b border-gray-200 bg-[#f8fbfc] lg:h-[76px]">
       <div className="mx-auto flex h-full w-full items-center">
-        {/* ==========================================
-            Logo
-        ========================================== */}
+       <Image src={logo} alt='logo' width={60} height={60} className="ml-4"></Image>
 
         <div className="flex h-full flex-1 items-center px-4 sm:px-6 lg:w-[175px] lg:flex-none lg:border-r lg:px-5">
           <div className="flex items-center gap-2">
-            <div className="flex h-8 w-8 items-center justify-center text-3xl font-bold text-[#064b78]">
-              +
-            </div>
 
             <span className="text-[23px] font-semibold tracking-tight text-[#064b78] sm:text-[25px]">
-              Heltro
+             Novacare 
             </span>
           </div>
         </div>
