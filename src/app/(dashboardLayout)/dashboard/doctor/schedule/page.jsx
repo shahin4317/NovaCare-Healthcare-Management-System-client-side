@@ -24,6 +24,7 @@ import { scheduleDetails } from "@/lib/api/doctors/data";
 import { authClient } from "@/lib/auth-client";
 import toast from "react-hot-toast";
 import EditSchedule from "@/components/EditSchedule";
+import DeleteSchedule from "@/components/DeleteSchedule";
 
 const DoctorScheduleForm = () => {
     const { data: session } = authClient.useSession();
@@ -87,17 +88,11 @@ const DoctorScheduleForm = () => {
 
                 const result = await scheduleDetails(email);
 
-                console.log("Schedule:", result);
-
                 setSchedule(result);
-            } catch (error) {
-                console.error(
-                    "Failed to load schedule:",
-                    error
-                );
+            } 
 
-                setSchedule(null);
-            } finally {
+            
+            finally {
                 setLoading(false);
             }
         };
@@ -334,9 +329,9 @@ const DoctorScheduleForm = () => {
 
                                 <button
                                     type="button"
-                                    className="rounded-xl bg-danger/10 px-4 py-2 text-sm font-medium text-danger transition hover:bg-danger/20"
+                                    className=""
                                 >
-                                    Delete
+                                    <DeleteSchedule scheduleData={schedule.schedule}   doctorId={schedule._id}></DeleteSchedule>
                                 </button>
 
                             </div>

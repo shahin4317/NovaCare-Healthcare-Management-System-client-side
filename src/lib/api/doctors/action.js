@@ -1,6 +1,6 @@
 'use server'
 
-import { serverMutation } from "../sarver";
+import { deleteMutation, serverMutation } from "../sarver";
 
 
 
@@ -17,7 +17,12 @@ export const addSchedule = async (data, email) => {
 }
 export const updateSchedule = async( data, id)=>{
     const resData = await serverMutation(`/api/doctors/${id}/schedule`, "PATCH", data)
-    console.log(data, id,'this is updateschedule');
+
+    return resData
+}
+
+export const deleteSchedule = async (id)=>{
+    const resData = await deleteMutation(`/api/doctors/${id}/schedule` )
     return resData
 }
 

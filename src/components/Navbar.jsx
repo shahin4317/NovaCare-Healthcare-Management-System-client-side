@@ -15,6 +15,7 @@ import {
 
 import { authClient } from "@/lib/auth-client";
 import Image from "next/image";
+import Link from "next/link";
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -76,50 +77,44 @@ const Navbar = () => {
         ========================================== */}
 
         <div className="hidden flex-1 items-center justify-center gap-6 lg:flex xl:gap-10">
-          <a
-            href="#"
+          <Link
+            href={'/'}
             className="flex items-center gap-1 text-[15px] font-medium text-[#064b78]"
           >
             Home
             <ArrowChevronDown className="h-3.5 w-3.5" />
-          </a>
+          </Link>
 
-          <a
-            href="#"
+          <Link
+            href={'/find-doctor'}
             className="text-[15px] font-medium text-[#064b78]"
           >
-            About
-          </a>
+            Find Doctor
+          </Link>
 
-          <a
-            href="#"
+          <Link
+            href={'/about-us'}
             className="flex items-center gap-1 text-[15px] font-medium text-[#064b78]"
           >
-            Pages
+            About US
             <ArrowChevronDown className="h-3.5 w-3.5" />
-          </a>
+          </Link>
 
-          <a
-            href="#"
+          <Link
+            href={"/contact-us"}
             className="flex items-center gap-1 text-[15px] font-medium text-[#064b78]"
           >
-            Blog
+            Contact Us
             <ArrowChevronDown className="h-3.5 w-3.5" />
-          </a>
+          </Link>
 
-          <a
-            href="#"
+          <Link
+            href={'/dashboard'}
             className="text-[15px] font-medium text-[#064b78]"
           >
-            Contact
-          </a>
+           Dashboard
+          </Link>
 
-          <a
-            href="#"
-            className="text-[15px] font-medium text-[#064b78]"
-          >
-            Pricing
-          </a>
         </div>
 
         {/* ==========================================
