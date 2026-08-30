@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from "react";
 import { Briefcase, CircleDollar, Factory, GraduationCap, Magnifier, Stethoscope } from "@gravity-ui/icons";
+import Link from "next/link";
 
 
 const FindDoctorCard = ({ doctors }) => {
@@ -255,7 +256,7 @@ const DoctorCard = ({ doctor }) => {
                     </div>
                 </div>
                 <div className="mt-auto pt-6">
-                    <button type="button" className="flex w-full items-center justify-center rounded-xl bg-[#064b78] px-4 py-3 text-sm font-semibold text-white transition-all duration-200 hover:bg-[#053d61] active:scale-[0.98]" > View Doctor </button>
+                    <button type="button" className="flex w-full items-center justify-center rounded-xl bg-[#064b78] px-4 py-3 text-sm font-semibold text-white transition-all duration-200 hover:bg-[#053d61] active:scale-[0.98]" > <Link href={`/find-doctor/${doctor._id}`}>Veiw Details</Link> </button>
                 </div>
             </div>
         </article>
