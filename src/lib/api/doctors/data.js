@@ -1,13 +1,13 @@
 
 import { serverfetch } from "../sarver"
 
-export const doctorProfile = async(email)=>{
-    const result = await serverfetch(`/api/doctors/${email}`)
-    console.log(result);
+export const doctorProfile = async(id)=>{
+    const result = await serverfetch(`/api/doctors/${id}`)
+    console.log(result,'this is doctor profile data ');
     return result
 }
-export const scheduleDetails = async(email)=>{
-    const result = await serverfetch(`/api/doctors/${email}/schedule`)
+export const scheduleDetails = async(id)=>{
+    const result = await serverfetch(`/api/doctors/${id}/schedule`)
     console.log(result);
     return result
 }

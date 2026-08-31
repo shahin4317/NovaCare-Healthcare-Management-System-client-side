@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useForm } from "react-hook-form";
@@ -83,6 +82,10 @@ const DoctorProfileForm = () => {
 
     const { data: session } = useSession();
 
+    // This is the ONE consistent identifier used everywhere
+    // (matches backend's `doctorsId` field on the doctors collection).
+    const userId = session?.user?.id;
+
     const userEmail = session?.user?.email;
 
     // ==========================================
@@ -90,11 +93,13 @@ const DoctorProfileForm = () => {
     // ==========================================
 
     useEffect(() => {
-        if (!userEmail) return;
+        if (!userId) return;
 
         const getDoctorData = async () => {
             try {
-                const datas = await doctorProfile(userEmail);
+                // doctorProfile hits GET /api/doctors/:id
+                // where :id must be doctorsId to match the backend query
+                const datas = await doctorProfile(userId);
 
                 console.log("Doctor profile:", datas);
 
@@ -138,7 +143,7 @@ const DoctorProfileForm = () => {
         };
 
         getDoctorData();
-    }, [userEmail, reset]);
+    }, [userId, reset]);
 
     // ==========================================
     // Watch Specialization
@@ -353,6 +358,13 @@ const DoctorProfileForm = () => {
             // ==========================================
 
             const doctorProfileData = {
+                // FIX: doctorsId is the single identifier used across
+                // profile + schedule (add, get, update, delete). Without
+                // this, the backend can never find this doctor again
+                // by anything other than Mongo's internal _id.
+                doctorsId:
+                    userId,
+
                 consultationFee:
                     data.consultationFee,
 
@@ -405,11 +417,13 @@ const DoctorProfileForm = () => {
 
                     // ==========================================
                     // GET AGAIN AFTER POST
+                    // FIX: refetch by userId (doctorsId), not email —
+                    // GET /api/doctors/:id matches on doctorsId.
                     // ==========================================
 
                     const newDoctor =
                         await doctorProfile(
-                            userEmail
+                            userId
                         );
 
                     if (newDoctor) {
@@ -455,10 +469,13 @@ const DoctorProfileForm = () => {
             // ==========================================
 
             else {
+                // FIX: use userId (doctorsId), not the undefined
+                // `user._id` — PATCH /api/doctors/:id matches on
+                // doctorsId, not Mongo's internal _id.
                 const updateRes =
                     await upDateDoctors(
                         doctorProfileData,
-                        doctor._id
+                        userId
                     );
 
                 console.log(
@@ -996,4 +1013,3 @@ const DoctorProfileForm = () => {
 };
 
 export default DoctorProfileForm;
-

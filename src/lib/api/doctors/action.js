@@ -11,8 +11,8 @@ export const addDoctors = async (data) => {
 }
 
 
-export const addSchedule = async (data, email) => {
-    const resData = await serverMutation(`/api/doctors/${email}/schedule`, 'POST', data);
+export const addSchedule = async (data, id) => {
+    const resData = await serverMutation(`/api/doctors/${id}/schedule`, 'POST', data);
     return resData
 }
 export const updateSchedule = async( data, id)=>{
@@ -30,3 +30,4 @@ export const upDateDoctors = async (data, id) => {
     const resData = await serverMutation(`/api/doctors/${id}`, 'PATCH', data)
     return resData
 }
+

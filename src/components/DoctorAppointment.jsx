@@ -10,14 +10,21 @@ import {
 
 import { Button, Input, Label } from "@heroui/react";
 import toast from "react-hot-toast";
+import { authClient } from "@/lib/auth-client";
+import { addAppointments } from "@/lib/api/appoinments/action";
+
+
 
 const DoctorAppointment = ({ doctor }) => {
+    console.log(doctor);
+
 
     const [appointmentDate, setAppointmentDate] = useState("");
     const [appointmentTime, setAppointmentTime] = useState("");
     const [symptoms, setSymptoms] = useState("");
 
     const workingDays = doctor?.schedule?.workingDays || [];
+
 
     const appointmentHours =
         doctor?.schedule?.appointmentHours || [];
@@ -79,11 +86,18 @@ const DoctorAppointment = ({ doctor }) => {
     }, [workingDays]);
 
 
-    // ==========================================
-    // Submit Appointment
-    // ==========================================
+    const {
+        data: session,
 
-    const handleSubmit = (e) => {
+    } = authClient.useSession()
+    console.log(session, 'user');
+    const userId = session?.user?.id
+    const users= session?.user?.email
+    console.log(users);
+
+
+
+    const handleSubmit = async (e) => {
 
         e.preventDefault();
 
@@ -109,9 +123,11 @@ const DoctorAppointment = ({ doctor }) => {
 
         const appointmentData = {
 
-            patientId: null,
+            patientId: userId,
+            patientEmail: users,
 
-            doctorId: doctor._id,
+            doctorId: doctor.doctorsId,
+
 
             appointmentDate,
 
@@ -120,25 +136,19 @@ const DoctorAppointment = ({ doctor }) => {
             appointmentStatus: "pending",
 
             symptoms: symptoms.trim(),
+            paymentStatus: null
 
         };
+        const resData = await addAppointments(appointmentData)
+        if (resData) {
+            toast.success(
+                "Appointment data prepared successfully!"
+            );
+        }
+        if(!resData){
+            toast.error('Something went Worng')
+        }
 
-
-        // এখন শুধু console
-        console.log(
-            "========== APPOINTMENT DATA =========="
-        );
-
-        console.log(appointmentData);
-
-        console.log(
-            "======================================"
-        );
-
-
-        toast.success(
-            "Appointment data prepared successfully!"
-        );
 
     };
 

@@ -29,7 +29,7 @@ import DeleteSchedule from "@/components/DeleteSchedule";
 const DoctorScheduleForm = () => {
     const { data: session } = authClient.useSession();
 
-    const email = session?.user?.email;
+    const email = session?.user?.id;
 
     // ==========================================
     // Working Days
@@ -89,9 +89,9 @@ const DoctorScheduleForm = () => {
                 const result = await scheduleDetails(email);
 
                 setSchedule(result);
-            } 
+            }
 
-            
+
             finally {
                 setLoading(false);
             }
@@ -319,20 +319,10 @@ const DoctorScheduleForm = () => {
                             {/* Actions */}
                             <div className="flex items-center gap-2">
 
-                                <button
-                                    type="button"
-                                    className=""
-                                >
-                                    <EditSchedule scheduleData={schedule.schedule}
-                                        doctorId={schedule._id}></EditSchedule>
-                                </button>
+                                <EditSchedule scheduleData={schedule.schedule}
+                                    doctorId={email}></EditSchedule>
 
-                                <button
-                                    type="button"
-                                    className=""
-                                >
-                                    <DeleteSchedule scheduleData={schedule.schedule}   doctorId={schedule._id}></DeleteSchedule>
-                                </button>
+                                <DeleteSchedule scheduleData={schedule.schedule} doctorId={email}></DeleteSchedule>
 
                             </div>
 
