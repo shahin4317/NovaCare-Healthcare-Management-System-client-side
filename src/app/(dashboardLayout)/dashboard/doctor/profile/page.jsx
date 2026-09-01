@@ -362,7 +362,7 @@ const DoctorProfileForm = () => {
                 // profile + schedule (add, get, update, delete). Without
                 // this, the backend can never find this doctor again
                 // by anything other than Mongo's internal _id.
-                doctorsId:
+                doctorId:
                     userId,
 
                 consultationFee:

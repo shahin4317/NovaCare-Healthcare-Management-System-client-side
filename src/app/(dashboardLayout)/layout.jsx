@@ -21,7 +21,7 @@ import {
 } from "@gravity-ui/icons";
 
 import { authClient } from "@/lib/auth-client";
-import Footer from "@/components/Footer";
+
 
 // =====================================================
 // DOCTOR MENU
@@ -68,14 +68,8 @@ const patientMenu = [
     {
         key: "overview",
         label: "Overview",
-        href: "/dashboard/patient",
+        href: "/dashboard/patient/overview",
         icon: House,
-    },
-    {
-        key: "doctors",
-        label: "Find Doctors",
-        href: "/dashboard/patient/doctors",
-        icon: Stethoscope,
     },
     {
         key: "appointments",
@@ -84,15 +78,15 @@ const patientMenu = [
         icon: Calendar,
     },
     {
-        key: "prescriptions",
-        label: "My Prescriptions",
-        href: "/dashboard/patient/prescriptions",
+        key: "Payment History",
+        label: "Payment Historys",
+        href: "/dashboard/patient/payment-history",
         icon: FileText,
     },
     {
-        key: "profile",
-        label: "Profile Management",
-        href: "/dashboard/patient/profile",
+        key: "sucess",
+        label: "sucess",
+        href: "/dashboard/paymentSuccess",
         icon: Person,
     },
 ];
