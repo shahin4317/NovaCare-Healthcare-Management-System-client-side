@@ -20,3 +20,9 @@ export const getDoctorDetails = async(id)=>{
     const result = await serverfetch(`/api/doctors/details/${id}`)
     return result
 }
+
+export const getPatientRequest = async(doctorId)=>{
+    const res = await serverfetch(`/api/appointments/doctor/${doctorId}`)
+    console.log(res,'data.js ');
+    return res
+}

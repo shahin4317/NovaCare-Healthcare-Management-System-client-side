@@ -21,6 +21,7 @@ export const deleteMutation = async (path) => {
 }
 
 
+
 export const serverfetch = async (path) => {
 
     const res = await fetch(`${baseUrl}${path}`)

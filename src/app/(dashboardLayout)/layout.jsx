@@ -33,7 +33,7 @@ const doctorMenu = [
     {
         key: "overview",
         label: "Overview",
-        href: "/dashboard/doctor",
+        href: "/dashboard/doctor/overveiw",
         icon: House,
     },
     {
@@ -224,7 +224,7 @@ const DashboardLayout = ({ children }) => {
     // =================================================
 
     const dashboardPath = {
-        doctor: "/dashboard/doctor",
+        doctor: "/dashboard/doctor/overview",
         patient: "/dashboard/patient",
         admin: "/dashboard/admin",
     };
