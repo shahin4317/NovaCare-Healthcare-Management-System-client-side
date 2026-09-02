@@ -1,21 +1,21 @@
-"use client";
+import { getUserSession } from '@/lib/api/session';
+import React from 'react';
+import PatientOverviewCards from './PatientOverviewCards';
+import { getAppoinmentsrDetails } from '@/lib/api/appoinments/data';
 
-import { useSearchParams } from "next/navigation";
+const Overviewpage = async() => {
+ const session = await getUserSession();
+  const patientId = session?.id;
+  const AppoinmentsDetails =
+    await getAppoinmentsrDetails(patientId);
 
-const OverviewPage = () => {
-
-    const searchParams = useSearchParams();
-
-    const sessionId =
-        searchParams.get("session_id");
-
-    console.log("Stripe Session ID:", sessionId);
+  console.log("Appointments:", AppoinmentsDetails);
 
     return (
         <div>
-            Overview
+            <PatientOverviewCards appointments={AppoinmentsDetails}></PatientOverviewCards>
         </div>
     );
 };
 
-export default OverviewPage;
+export default Overviewpage;
