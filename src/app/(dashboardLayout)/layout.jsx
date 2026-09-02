@@ -18,6 +18,8 @@ import {
     Bars,
     Xmark,
     Factory,
+
+    HouseFill,
 } from "@gravity-ui/icons";
 
 import { authClient } from "@/lib/auth-client";
@@ -321,14 +323,10 @@ const DashboardLayout = ({ children }) => {
                     href="/"
                     className="flex items-center gap-2"
                 >
-
-                    <div className="flex h-9 w-9 items-center justify-center text-3xl font-bold text-[#064b78]">
-                        +
-                    </div>
-
                     <span className="text-[23px] font-semibold tracking-tight text-[#064b78]">
-                        Heltro
+                       NovaCare
                     </span>
+                    <span className=" text-7xl text-[#064b78] items-center"> <HouseFill></HouseFill></span>
 
                 </Link>
 
