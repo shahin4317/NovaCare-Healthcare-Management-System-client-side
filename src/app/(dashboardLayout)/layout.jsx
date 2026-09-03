@@ -100,12 +100,6 @@ const patientMenu = [
 
 const adminMenu = [
     {
-        key: "overview",
-        label: "Overview",
-        href: "/dashboard/admin",
-        icon: House,
-    },
-    {
         key: "users",
         label: "Manage Users",
         href: "/dashboard/admin/users",
@@ -119,20 +113,20 @@ const adminMenu = [
     },
     {
         key: "appointments",
-        label: "Appointments",
+        label: "Manage Appointments",
         href: "/dashboard/admin/appointments",
         icon: Calendar,
     },
     {
         key: "hospital",
-        label: "Hospital Management",
-        href: "/dashboard/admin/hospital",
+        label: "Payment Management",
+        href: "/dashboard/admin/payment-management",
         icon: Factory,
     },
     {
-        key: "settings",
-        label: "Settings",
-        href: "/dashboard/admin/settings",
+        key: "Analytics",
+        label: "Analytics",
+        href: "/dashboard/admin/analytics",
         icon: CloudGear,
     },
 ];

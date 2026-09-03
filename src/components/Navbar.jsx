@@ -39,7 +39,7 @@ const Navbar = () => {
         }
 
         if (role === "doctor") {
-            router.push("/dashboard/doctor");
+            router.push("/dashboard/doctor/overveiw");
         } else if (role === "patient") {
             router.push("/dashboard/patient");
         } else if (role === "admin") {

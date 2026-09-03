@@ -3,6 +3,7 @@
 import { getAppoinmentsId } from "@/lib/api/appoinments/data";
 
 import PrescriptionCard from "@/components/PrescriptionCard";
+import { getPrescriptions } from "@/lib/api/prescriptions/data";
 
 
 const  appoinmentid= async ({ params }) => {
@@ -19,8 +20,11 @@ const  appoinmentid= async ({ params }) => {
     const patientName = appointment?.patientName
 
     console.log("Appointment:", appointment);
-   const doctorId = appoinmentid?.doctorId
-   
+   const doctorId = appointment?.doctorId
+   console.log(doctorId,'doctor asdfjop');
+   const existingPrescription = await getPrescriptions(appointmentId)
+   console.log(existingPrescription);
+
 
     return (
         <div className="min-h-screen bg-slate-50 px-4 py-8 md:px-8">
@@ -42,7 +46,7 @@ const  appoinmentid= async ({ params }) => {
                 </div>
 
                 {/* Prescription Form */}
-                <PrescriptionCard appointmentId={Id} patientName={patientName} doctorId={doctorId}></PrescriptionCard>
+                <PrescriptionCard existingPrescription={existingPrescription} appointmentId={Id} patientName={patientName} doctorId={doctorId}></PrescriptionCard>
             </div>
         </div>
     );
