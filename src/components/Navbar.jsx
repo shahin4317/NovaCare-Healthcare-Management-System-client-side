@@ -1,396 +1,474 @@
-
 "use client";
 
-import { useState } from "react";
+import Image from "next/image";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
-import logo from '@/image/logo.png'
+import { useState } from "react";
+import logo from "@/image/logo.png";
 
 import {
-  ArrowChevronDown,
-  Bars,
-  Xmark,
-
-  ArrowRightFromSquare,
+    ChevronDown,
+    Bars,
+    Xmark,
+    ArrowRightFromSquare,
 } from "@gravity-ui/icons";
 
 import { authClient } from "@/lib/auth-client";
-import Image from "next/image";
-import Link from "next/link";
+import { Button } from "@heroui/react";
 
 const Navbar = () => {
-  const [isOpen, setIsOpen] = useState(false);
-  const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
+    const router = useRouter();
 
-  const router = useRouter();
+    const {
+        data: session,
+        isPending,
+    } = authClient.useSession();
 
-  // ==========================================
-  // Better Auth Session
-  // ==========================================
+    const [mobileMenu, setMobileMenu] = useState(false);
+    const [profileOpen, setProfileOpen] = useState(false);
 
-  const { data: session, isPending } = authClient.useSession();
+    const user = session?.user;
 
-  const user = session?.user;
+    // ================= DASHBOARD ROLE REDIRECT =================
+    const handleDashboard = () => {
+        const role = session?.user?.role;
 
-  // ==========================================
-  // Logout
-  // ==========================================
+        if (!role) {
+            router.push("/signin");
+            return;
+        }
 
-  const handleLogout = async () => {
-    try {
-      await authClient.signOut();
+        if (role === "doctor") {
+            router.push("/dashboard/doctor");
+        } else if (role === "patient") {
+            router.push("/dashboard/patient");
+        } else if (role === "admin") {
+            router.push("/dashboard/admin");
+        } else {
+            console.error("Unknown role:", role);
+        }
 
-      setIsUserMenuOpen(false);
-      setIsOpen(false);
+        // Mobile menu close
+        setMobileMenu(false);
+    };
 
-      router.push("/");
-      router.refresh();
-    } catch (error) {
-      console.error("Logout failed:", error);
-    }
-  };
+    // ================= SIGN OUT =================
+    const handleSignOut = async () => {
+        try {
+            await authClient.signOut();
 
-  // ==========================================
-  // User Initial
-  // ==========================================
+            setProfileOpen(false);
+            setMobileMenu(false);
 
-  const userInitial =
-    user?.name?.charAt(0)?.toUpperCase() ||
-    user?.email?.charAt(0)?.toUpperCase() ||
-    "U";
+            router.push("/");
+            router.refresh();
+        } catch (error) {
+            console.error("Sign out error:", error);
+        }
+    };
 
-  return (
-    <nav className="relative z-50 h-[70px] w-full border-b border-gray-200 bg-[#f8fbfc] lg:h-[76px]">
-      <div className="mx-auto flex h-full w-full items-center">
-       <Image src={logo} alt='logo' width={60} height={60} className="ml-4"></Image>
+    return (
+        <header className="sticky top-0 z-50 w-full bg-white shadow-sm">
+            <nav className="mx-auto flex h-[76px] max-w-[1200px] items-center">
 
-        <div className="flex h-full flex-1 items-center px-4 sm:px-6 lg:w-[175px] lg:flex-none lg:border-r lg:px-5">
-          <div className="flex items-center gap-2">
+                {/* ================= LOGO ================= */}
+                <Link
+                    href="/"
+                    className="flex h-full w-[175px] shrink-0 items-center border-r border-gray-200 px-6"
+                >
+                    <Image
+                        src={logo}
+                        alt="Heltra"
+                        width={85}
+                        height={45}
+                        className="h-auto w-[65px] object-contain"
+                        priority
+                    />
+                </Link>
 
-            <span className="text-[23px] font-semibold tracking-tight text-[#064b78] sm:text-[25px]">
-             Novacare 
-            </span>
-          </div>
-        </div>
+                {/* ================= DESKTOP NAV ================= */}
+                <div className="hidden h-full flex-1 items-center justify-center lg:flex">
+                    <div className="flex items-center gap-8">
 
-        {/* ==========================================
-            Desktop Menu
-        ========================================== */}
+                        <Link
+                            href="/"
+                            className="flex items-center gap-1 text-[15px] font-medium text-[#064873] hover:text-[#0875b1]"
+                        >
+                            Home
+                            <ChevronDown className="h-3.5 w-3.5" />
+                        </Link>
 
-        <div className="hidden flex-1 items-center justify-center gap-6 lg:flex xl:gap-10">
-          <Link
-            href={'/'}
-            className="flex items-center gap-1 text-[15px] font-medium text-[#064b78]"
-          >
-            Home
-            <ArrowChevronDown className="h-3.5 w-3.5" />
-          </Link>
+                        <Link
+                            href="/about"
+                            className="text-[15px] font-medium text-[#064873] hover:text-[#0875b1]"
+                        >
+                            About
+                        </Link>
 
-          <Link
-            href={'/find-doctor'}
-            className="text-[15px] font-medium text-[#064b78]"
-          >
-            Find Doctor
-          </Link>
+                        <Link
+                            href="/find-doctor"
+                            className="flex items-center gap-1 text-[15px] font-medium text-[#064873] hover:text-[#0875b1]"
+                        >
+                            Find-doctor
+                            <ChevronDown className="h-3.5 w-3.5" />
+                        </Link>
 
-          <Link
-            href={'/about-us'}
-            className="flex items-center gap-1 text-[15px] font-medium text-[#064b78]"
-          >
-            About US
-            <ArrowChevronDown className="h-3.5 w-3.5" />
-          </Link>
+                        <Link
+                            href="/contact"
+                            className="text-[15px] font-medium text-[#064873] hover:text-[#0875b1]"
+                        >
+                            Contact
+                        </Link>
 
-          <Link
-            href={"/contact-us"}
-            className="flex items-center gap-1 text-[15px] font-medium text-[#064b78]"
-          >
-            Contact Us
-            <ArrowChevronDown className="h-3.5 w-3.5" />
-          </Link>
-
-          <Link
-            href={'/dashboard'}
-            className="text-[15px] font-medium text-[#064b78]"
-          >
-           Dashboard
-          </Link>
-
-        </div>
-
-        {/* ==========================================
-            Desktop User Avatar
-        ========================================== */}
-
-        <div className="relative hidden h-full items-center border-l border-gray-200 px-4 lg:flex">
-          {!isPending && user && (
-            <>
-              {/* Avatar Button */}
-
-              <button
-                type="button"
-                onClick={() =>
-                  setIsUserMenuOpen((prev) => !prev)
-                }
-                className="flex items-center justify-center rounded-full outline-none transition hover:opacity-80 focus:ring-2 focus:ring-[#064b78]/20"
-                aria-label="Open user menu"
-              >
-                {user.image ? (
-                  <img
-                    src={user.image}
-                    alt={user.name || "User"}
-                    className="h-10 w-10 rounded-full border border-gray-200 object-cover"
-                  />
-                ) : (
-                  <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[#064b78] text-sm font-semibold text-white">
-                    {userInitial}
-                  </div>
-                )}
-              </button>
-
-              {/* ==========================================
-                  Desktop User Dropdown
-              ========================================== */}
-
-              {isUserMenuOpen && (
-                <div className="absolute right-3 top-[64px] w-[260px] overflow-hidden rounded-xl border border-gray-200 shadow-lg">
-                  {/* User Info */}
-
-                  <div className="border-b border-gray-100 p-4">
-                    <div className="flex items-center gap-3">
-                      {user.image ? (
-                        <img
-                          src={user.image}
-                          alt={user.name || "User"}
-                          className="h-11 w-11 rounded-full border border-gray-200 object-cover"
-                        />
-                      ) : (
-                        <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-[#064b78] text-sm font-semibold text-white">
-                          {userInitial}
-                        </div>
-                      )}
-
-                      <div className="min-w-0">
-                        <p className="truncate text-sm font-semibold text-[#064b78]">
-                          {user.name}
-                        </p>
-
-                        <p className="truncate text-xs text-gray-500">
-                          {user.email}
-                        </p>
-                      </div>
+                        {/* ================= ROLE BASED DASHBOARD ================= */}
+                        <button
+                            type="button"
+                            onClick={handleDashboard}
+                            className="text-[15px] font-medium text-[#064873] hover:text-[#0875b1]"
+                        >
+                            DashBoard
+                        </button>
                     </div>
-                  </div>
-
-                  {/* Logout */}
-
-                  <div className="p-2">
-                    <button
-                      type="button"
-                      onClick={handleLogout}
-                      className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-gray-600 transition hover:bg-red-50 hover:text-red-600"
-                    >
-                      <ArrowRightFromSquare className="h-4 w-4" />
-
-                      <span>Logout</span>
-                    </button>
-                  </div>
                 </div>
-              )}
-            </>
-          )}
 
-          {/* If user is not logged in */}
+                {/* ================= DESKTOP RIGHT ================= */}
+                <div className="hidden h-full items-center lg:flex">
 
-          {!isPending && !user && (
-            <button
-              type="button"
-              onClick={() => router.push("/signin")}
-              className="rounded-md bg-[#064b78] px-5 py-3 text-sm font-semibold text-white transition hover:bg-[#053d61]"
-            >
-              Sign in
-            </button>
-          )}
-        </div>
+                    {/* USER */}
+                    <div className="relative flex h-full items-center border-l border-r border-gray-200 px-5">
 
-        {/* ==========================================
-            Appointment - Desktop
-        ========================================== */}
+                        {isPending ? (
+                            <div className="h-10 w-10 animate-pulse rounded-full bg-gray-200" />
+                        ) : user ? (
 
-        <div className="hidden h-full items-center border-l border-gray-200 px-3 lg:flex">
-          <button className="rounded-md bg-[#064b78] px-6 py-3.5 text-[15px] font-semibold text-white transition hover:bg-[#053d61] xl:px-7 xl:py-4">
-            Appointment
-          </button>
-        </div>
+                            <button
+                                type="button"
+                                onClick={() =>
+                                    setProfileOpen((prev) => !prev)
+                                }
+                                className="flex items-center gap-3"
+                            >
 
-        {/* ==========================================
-            Mobile Menu Button
-        ========================================== */}
+                                {/* USER IMAGE */}
+                                {user.image ? (
+                                    <Image
+                                        src={user.image}
+                                        alt={user.name || "User"}
+                                        width={44}
+                                        height={44}
+                                        className="h-11 w-11 rounded-full border-2 border-[#dcebf3] object-cover"
+                                    />
+                                ) : (
+                                    <div className="flex h-11 w-11 items-center justify-center rounded-full bg-[#064873] text-sm font-bold text-white">
+                                        {user.name
+                                            ?.charAt(0)
+                                            ?.toUpperCase() || "U"}
+                                    </div>
+                                )}
 
-        <div className="flex items-center gap-2 px-4 lg:hidden">
-          {/* Mobile Avatar */}
+                                {/* NAME */}
+                                <div className="hidden text-left xl:block">
+                                    <p className="max-w-[120px] truncate text-sm font-semibold text-[#064873]">
+                                        {user.name || "User"}
+                                    </p>
 
-          {!isPending && user && (
-            <div className="relative">
-              <button
-                type="button"
-                onClick={() =>
-                  setIsUserMenuOpen((prev) => !prev)
-                }
-                className="flex items-center justify-center rounded-full outline-none transition hover:opacity-80 focus:ring-2 focus:ring-[#064b78]/20"
-                aria-label="Open user menu"
-              >
-                {user.image ? (
-                  <img
-                    src={user.image}
-                    alt={user.name || "User"}
-                    className="h-9 w-9 rounded-full border border-gray-200 object-cover"
-                  />
-                ) : (
-                  <div className="flex h-9 w-9 items-center justify-center rounded-full bg-[#064b78] text-sm font-semibold text-white">
-                    {userInitial}
-                  </div>
-                )}
-              </button>
+                                    <div className="flex items-center gap-1 text-xs text-gray-500">
+                                        <span>Profile</span>
 
-              {/* Mobile User Dropdown */}
+                                        <ChevronDown
+                                            className={`h-3 w-3 transition-transform ${
+                                                profileOpen
+                                                    ? "rotate-180"
+                                                    : ""
+                                            }`}
+                                        />
+                                    </div>
+                                </div>
+                            </button>
 
-              {isUserMenuOpen && (
-                <div className="absolute right-0 top-[48px] z-50 w-[250px] overflow-hidden rounded-xl border border-gray-200 bg-white shadow-lg">
-                  {/* User Info */}
+                        ) : (
 
-                  <div className="border-b border-gray-100 p-4">
-                    <div className="flex items-center gap-3">
-                      {user.image ? (
-                        <img
-                          src={user.image}
-                          alt={user.name || "User"}
-                          className="h-11 w-11 rounded-full border border-gray-200 object-cover"
-                        />
-                      ) : (
-                        <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-[#064b78] text-sm font-semibold text-white">
-                          {userInitial}
-                        </div>
-                      )}
+                            <Link
+                                href="/signin"
+                                className="text-sm font-semibold"
+                            >
+                                <Button
+                                    variant="outline"
+                                    className="bg-[#064873] text-white"
+                                >
+                                    Sign In
+                                </Button>
+                            </Link>
 
-                      <div className="min-w-0">
-                        <p className="truncate text-sm font-semibold text-[#064b78]">
-                          {user.name}
-                        </p>
+                        )}
 
-                        <p className="truncate text-xs text-gray-500">
-                          {user.email}
-                        </p>
-                      </div>
+                        {/* ================= PROFILE DROPDOWN ================= */}
+                        {profileOpen && user && (
+                            <div className="absolute right-3 top-[68px] w-[280px] overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-[0_15px_40px_rgba(0,0,0,0.14)]">
+
+                                {/* PROFILE HEADER */}
+                                <div className="bg-[#f3f8fb] p-4">
+                                    <div className="flex items-center gap-3">
+
+                                        {user.image ? (
+                                            <Image
+                                                src={user.image}
+                                                alt={user.name || "User"}
+                                                width={50}
+                                                height={50}
+                                                className="h-[50px] w-[50px] rounded-full object-cover"
+                                            />
+                                        ) : (
+                                            <div className="flex h-[50px] w-[50px] items-center justify-center rounded-full bg-[#064873] text-lg font-bold text-white">
+                                                {user.name
+                                                    ?.charAt(0)
+                                                    ?.toUpperCase() || "U"}
+                                            </div>
+                                        )}
+
+                                        <div className="min-w-0">
+                                            <p className="truncate text-sm font-bold text-[#064873]">
+                                                {user.name || "User"}
+                                            </p>
+
+                                            <p className="truncate text-xs text-gray-500">
+                                                {user.email}
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {/* DROPDOWN */}
+                                <div className="p-2">
+
+                                    <Link
+                                        href="/profile"
+                                        onClick={() =>
+                                            setProfileOpen(false)
+                                        }
+                                        className="block rounded-xl px-4 py-3 text-sm font-medium text-gray-700 hover:bg-[#f3f8fb]"
+                                    >
+                                        My Profile
+                                    </Link>
+
+                                    {/* Dashboard */}
+                                    <button
+                                        type="button"
+                                        onClick={() => {
+                                            setProfileOpen(false);
+                                            handleDashboard();
+                                        }}
+                                        className="block w-full rounded-xl px-4 py-3 text-left text-sm font-medium text-gray-700 hover:bg-[#f3f8fb]"
+                                    >
+                                        Dashboard
+                                    </button>
+
+                                    <button
+                                        type="button"
+                                        onClick={handleSignOut}
+                                        className="flex w-full items-center gap-3 rounded-xl px-4 py-3 text-sm font-semibold text-red-500 hover:bg-red-50"
+                                    >
+                                        <ArrowRightFromSquare className="h-4 w-4" />
+
+                                        Sign Out
+                                    </button>
+
+                                </div>
+                            </div>
+                        )}
                     </div>
-                  </div>
 
-                  {/* Logout */}
-
-                  <div className="p-2">
-                    <button
-                      type="button"
-                      onClick={handleLogout}
-                      className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-gray-600 transition hover:bg-red-50 hover:text-red-600"
-                    >
-                      <ArrowRightFromSquare className="h-4 w-4" />
-
-                      <span>Logout</span>
-                    </button>
-                  </div>
+                    {/* APPOINTMENT */}
+                    <div className="px-3">
+                        <Link
+                            href="/appointment"
+                            className="flex h-12 min-w-[138px] items-center justify-center rounded-md bg-[#004873] px-6 text-sm font-semibold text-white transition hover:bg-[#003957]"
+                        >
+                            Appointment
+                        </Link>
+                    </div>
                 </div>
-              )}
-            </div>
-          )}
 
-          {/* Mobile Menu */}
+                {/* ================= MOBILE ================= */}
+                <div className="ml-auto flex items-center gap-3 px-4 lg:hidden">
 
-          <button
-            type="button"
-            onClick={() => setIsOpen(!isOpen)}
-            className="flex h-10 w-10 items-center justify-center rounded-md text-[#064b78] transition hover:bg-[#eef5f8]"
-            aria-label="Toggle menu"
-          >
-            {isOpen ? (
-              <Xmark className="h-6 w-6" />
-            ) : (
-              <Bars className="h-6 w-6" />
+                    {/* USER IMAGE */}
+                    {user && (
+                        <button
+                            type="button"
+                            onClick={() =>
+                                setProfileOpen((prev) => !prev)
+                            }
+                            className="relative"
+                        >
+                            {user.image ? (
+                                <Image
+                                    src={user.image}
+                                    alt={user.name || "User"}
+                                    width={42}
+                                    height={42}
+                                    className="h-[42px] w-[42px] rounded-full border-2 border-[#dcebf3] object-cover"
+                                />
+                            ) : (
+                                <div className="flex h-[42px] w-[42px] items-center justify-center rounded-full bg-[#064873] text-sm font-bold text-white">
+                                    {user.name
+                                        ?.charAt(0)
+                                        ?.toUpperCase() || "U"}
+                                </div>
+                            )}
+
+                            <span className="absolute bottom-0 right-0 h-2.5 w-2.5 rounded-full border-2 border-white bg-green-500" />
+                        </button>
+                    )}
+
+                    {/* HAMBURGER */}
+                    <button
+                        type="button"
+                        onClick={() =>
+                            setMobileMenu((prev) => !prev)
+                        }
+                        className="flex h-10 w-10 items-center justify-center rounded-lg bg-[#f2f7fa] text-[#064873]"
+                    >
+                        {mobileMenu ? (
+                            <Xmark className="h-6 w-6" />
+                        ) : (
+                            <Bars className="h-6 w-6" />
+                        )}
+                    </button>
+                </div>
+            </nav>
+
+            {/* ================= MOBILE MENU ================= */}
+            {mobileMenu && (
+                <div className="border-t border-gray-100 bg-white px-5 py-5 shadow-lg lg:hidden">
+
+                    <div className="flex flex-col gap-1">
+
+                        <Link
+                            href="/"
+                            onClick={() => setMobileMenu(false)}
+                            className="rounded-lg px-4 py-3 font-medium text-[#064873] hover:bg-[#f3f8fb]"
+                        >
+                            Home
+                        </Link>
+
+                        <Link
+                            href="/about"
+                            onClick={() => setMobileMenu(false)}
+                            className="rounded-lg px-4 py-3 font-medium text-[#064873] hover:bg-[#f3f8fb]"
+                        >
+                            About
+                        </Link>
+
+                        <Link
+                            href="/find-doctor"
+                            onClick={() => setMobileMenu(false)}
+                            className="rounded-lg px-4 py-3 font-medium text-[#064873] hover:bg-[#f3f8fb]"
+                        >
+                            Find-doctor
+                        </Link>
+
+                        <Link
+                            href="/contact"
+                            onClick={() => setMobileMenu(false)}
+                            className="rounded-lg px-4 py-3 font-medium text-[#064873] hover:bg-[#f3f8fb]"
+                        >
+                            Contact
+                        </Link>
+
+                        {/* ================= MOBILE DASHBOARD ================= */}
+                        <button
+                            type="button"
+                            onClick={handleDashboard}
+                            className="rounded-lg px-4 py-3 text-left font-medium text-[#064873] hover:bg-[#f3f8fb]"
+                        >
+                            DashBoard
+                        </button>
+
+                        <Link
+                            href="/appointment"
+                            onClick={() => setMobileMenu(false)}
+                            className="mt-3 flex h-12 items-center justify-center rounded-lg bg-[#004873] font-semibold text-white"
+                        >
+                            Appointment
+                        </Link>
+
+                    </div>
+                </div>
             )}
-          </button>
-        </div>
-      </div>
 
-      {/* ==========================================
-          Mobile / Tablet Menu
-      ========================================== */}
+            {/* ================= MOBILE PROFILE DROPDOWN ================= */}
+            {profileOpen && user && (
+                <div className="absolute right-4 top-[68px] z-[60] w-[280px] overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-xl lg:hidden">
 
-      {isOpen && (
-        <div className="absolute left-0 top-[70px] w-full border-b border-gray-200 bg-[#f8fbfc] px-5 py-5 shadow-lg lg:hidden">
-          <div className="flex flex-col gap-1">
-            <a
-              href="#"
-              onClick={() => setIsOpen(false)}
-              className="flex items-center justify-between rounded-md px-4 py-3 text-[15px] font-medium text-[#064b78] hover:bg-[#eef5f8]"
-            >
-              Home
-              <ArrowChevronDown className="h-4 w-4" />
-            </a>
+                    <div className="bg-[#f3f8fb] p-4">
+                        <div className="flex items-center gap-3">
 
-            <a
-              href="#"
-              onClick={() => setIsOpen(false)}
-              className="rounded-md px-4 py-3 text-[15px] font-medium text-[#064b78] hover:bg-[#eef5f8]"
-            >
-              About
-            </a>
+                            {user.image ? (
+                                <Image
+                                    src={user.image}
+                                    alt={user.name || "User"}
+                                    width={50}
+                                    height={50}
+                                    className="h-[50px] w-[50px] rounded-full object-cover"
+                                />
+                            ) : (
+                                <div className="flex h-[50px] w-[50px] items-center justify-center rounded-full bg-[#064873] text-lg font-bold text-white">
+                                    {user.name
+                                        ?.charAt(0)
+                                        ?.toUpperCase() || "U"}
+                                </div>
+                            )}
 
-            <a
-              href="#"
-              onClick={() => setIsOpen(false)}
-              className="flex items-center justify-between rounded-md px-4 py-3 text-[15px] font-medium text-[#064b78] hover:bg-[#eef5f8]"
-            >
-              Pages
-              <ArrowChevronDown className="h-4 w-4" />
-            </a>
+                            <div className="min-w-0">
+                                <p className="truncate text-sm font-bold text-[#064873]">
+                                    {user.name || "User"}
+                                </p>
 
-            <a
-              href="#"
-              onClick={() => setIsOpen(false)}
-              className="flex items-center justify-between rounded-md px-4 py-3 text-[15px] font-medium text-[#064b78] hover:bg-[#eef5f8]"
-            >
-              Blog
-              <ArrowChevronDown className="h-4 w-4" />
-            </a>
+                                <p className="truncate text-xs text-gray-500">
+                                    {user.email}
+                                </p>
+                            </div>
+                        </div>
+                    </div>
 
-            <a
-              href="#"
-              onClick={() => setIsOpen(false)}
-              className="rounded-md px-4 py-3 text-[15px] font-medium text-[#064b78] hover:bg-[#eef5f8]"
-            >
-              Contact
-            </a>
+                    <div className="p-2">
 
-            <a
-              href="#"
-              onClick={() => setIsOpen(false)}
-              className="rounded-md px-4 py-3 text-[15px] font-medium text-[#064b78] hover:bg-[#eef5f8]"
-            >
-              Pricing
-            </a>
+                        <Link
+                            href="/profile"
+                            onClick={() => setProfileOpen(false)}
+                            className="block rounded-xl px-4 py-3 text-sm font-medium text-gray-700 hover:bg-[#f3f8fb]"
+                        >
+                            My Profile
+                        </Link>
 
-            {/* Mobile Appointment */}
+                        {/* Dashboard */}
+                        <button
+                            type="button"
+                            onClick={() => {
+                                setProfileOpen(false);
+                                handleDashboard();
+                            }}
+                            className="block w-full rounded-xl px-4 py-3 text-left text-sm font-medium text-gray-700 hover:bg-[#f3f8fb]"
+                        >
+                            Dashboard
+                        </button>
 
-            <button
-              type="button"
-              className="mt-4 w-full rounded-md bg-[#064b78] py-3.5 text-[15px] font-semibold text-white transition hover:bg-[#053d61]"
-            >
-              Appointment
-            </button>
-          </div>
-        </div>
-      )}
-    </nav>
-  );
+                        <button
+                            type="button"
+                            onClick={handleSignOut}
+                            className="flex w-full items-center gap-3 rounded-xl px-4 py-3 text-sm font-semibold text-red-500 hover:bg-red-50"
+                        >
+                            <ArrowRightFromSquare className="h-4 w-4" />
+
+                            Sign Out
+                        </button>
+
+                    </div>
+                </div>
+            )}
+        </header>
+    );
 };
 
 export default Navbar;
-

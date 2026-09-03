@@ -20,6 +20,7 @@ import {
     Factory,
 
     HouseFill,
+    StarFill,
 } from "@gravity-ui/icons";
 
 import { authClient } from "@/lib/auth-client";
@@ -51,7 +52,7 @@ const doctorMenu = [
     {
         key: "prescriptions",
         label: "Prescription Management",
-        href: "/dashboard/doctor/prescriptions",
+        href: "/dashboard/doctor/prescription",
         icon: FileText,
     },
     {
@@ -86,10 +87,10 @@ const patientMenu = [
         icon: FileText,
     },
     {
-        key: "sucess",
-        label: "sucess",
-        href: "/dashboard/paymentSuccess",
-        icon: Person,
+        key: "My Reviews",
+        label: "My Reviews",
+        href: "/dashboard/patient/my-reviews",
+        icon: StarFill,
     },
 ];
 

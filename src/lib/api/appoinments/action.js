@@ -16,3 +16,8 @@ export const getUpdateStatus = async (id, data) => {
 
     return result;
 };
+
+export const updateScheduleAppoinment = async(appointmentId, data)=>{
+    const result = await serverMutation(`/api/appointments/${appointmentId}`, 'PATCH', data)
+    return result
+}

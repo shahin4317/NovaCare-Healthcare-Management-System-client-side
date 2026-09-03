@@ -12,8 +12,10 @@ import {
     CircleXmark,
 } from "@gravity-ui/icons";
 
-const AppointmentsCard = ({ appointment = [] }) => {
-    console.log("appointment data:", appointment);
+const AppointmentsCard = ({ appointment}) => {
+    
+    const data = appointment?._id
+    console.log("appointment data:", data);
 
     const formatDate = (date) => {
         if (!date) return "";
@@ -35,6 +37,8 @@ const AppointmentsCard = ({ appointment = [] }) => {
             </div>
         );
     }
+
+
 
     return (
         <div className="space-y-5">

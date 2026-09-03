@@ -5,6 +5,7 @@ import { useState } from "react";
 
 import { getUpdateStatus } from "@/lib/api/appoinments/action";
 
+
 import {
     Calendar,
     Clock,
@@ -13,8 +14,10 @@ import {
 } from "@gravity-ui/icons";
 
 import { Button } from "@heroui/react";
+import Link from "next/link";
 
 const AppoinmentCard = ({ AppoinmentsDetails }) => {
+  
 
     const router = useRouter();
 
@@ -230,13 +233,14 @@ const AppoinmentCard = ({ AppoinmentsDetails }) => {
                                     {/* ========================= */}
 
                                     {appointment.appointmentStatus === "Approved" && (
-
-                                        <Button
+                                        <Link href={`/dashboard/doctor/prescription/${appointment._id}`}> <Button
                                             variant="outline"
                                             className="bg-[#064b78] text-white"
                                         >
-                                            Approved
-                                        </Button>
+                                            Mark Complited & Pescrive
+                                        </Button></Link>
+
+
 
                                     )}
 

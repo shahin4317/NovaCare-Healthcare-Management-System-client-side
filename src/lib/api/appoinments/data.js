@@ -11,3 +11,9 @@ export const getPaymentDetails = async(patientId)=>{
   console.log(result,'form data.js');
   return result
 }
+
+export const getAppoinmentsId =async(appointmentId)=>{
+  const result = await serverfetch(`/api/appointments/${appointmentId}`)
+  console.log(result,'form data');
+  return result
+}
