@@ -1,7 +1,7 @@
 import React from "react";
 import { Stethoscope } from "@gravity-ui/icons";
 
-const Loading = () => {
+const loading = () => {
     return (
         <main className="flex min-h-screen items-center justify-center bg-[#f8fbfc] px-4">
             <div className="flex flex-col items-center text-center">
@@ -34,4 +34,4 @@ const Loading = () => {
     );
 };
 
-export default Loading;
+export default loading;

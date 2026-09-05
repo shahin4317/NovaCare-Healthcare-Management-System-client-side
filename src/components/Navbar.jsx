@@ -43,7 +43,7 @@ const Navbar = () => {
         } else if (role === "patient") {
             router.push("/dashboard/patient");
         } else if (role === "admin") {
-            router.push("/dashboard/admin");
+            router.push("/dashboard/admin/users");
         } else {
             console.error("Unknown role:", role);
         }
@@ -279,14 +279,7 @@ const Navbar = () => {
                     </div>
 
                     {/* APPOINTMENT */}
-                    <div className="px-3">
-                        <Link
-                            href="/appointment"
-                            className="flex h-12 min-w-[138px] items-center justify-center rounded-md bg-[#004873] px-6 text-sm font-semibold text-white transition hover:bg-[#003957]"
-                        >
-                            Appointment
-                        </Link>
-                    </div>
+       
                 </div>
 
                 {/* ================= MOBILE ================= */}
@@ -385,13 +378,7 @@ const Navbar = () => {
                             DashBoard
                         </button>
 
-                        <Link
-                            href="/appointment"
-                            onClick={() => setMobileMenu(false)}
-                            className="mt-3 flex h-12 items-center justify-center rounded-lg bg-[#004873] font-semibold text-white"
-                        >
-                            Appointment
-                        </Link>
+                       
 
                     </div>
                 </div>
@@ -434,13 +421,7 @@ const Navbar = () => {
 
                     <div className="p-2">
 
-                        <Link
-                            href="/profile"
-                            onClick={() => setProfileOpen(false)}
-                            className="block rounded-xl px-4 py-3 text-sm font-medium text-gray-700 hover:bg-[#f3f8fb]"
-                        >
-                            My Profile
-                        </Link>
+                        
 
                         {/* Dashboard */}
                         <button

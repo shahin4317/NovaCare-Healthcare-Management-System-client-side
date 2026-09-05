@@ -17,3 +17,7 @@ export const getAppoinmentsId =async(appointmentId)=>{
   console.log(result,'form data');
   return result
 }
+export const getAppoinments = async()=>{
+  const result = await serverfetch(`/api/appointments`)
+  return result
+}

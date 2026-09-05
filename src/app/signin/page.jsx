@@ -23,10 +23,20 @@ import {
     TextField,
 } from "@heroui/react";
 
-import { authClient } from "@/lib/auth-client";
+import { authClient, signIn } from "@/lib/auth-client";
 import { useRouter } from "next/navigation";
 
 const SigninPage = () => {
+    const handleGoogleLogin = async () => {
+        const { data, error } = await signIn.social({
+            provider: "google",
+        });
+
+        if (error) {
+            console.error(error);
+            return;
+        }
+    };
     // ==========================================
     // States
     // ==========================================
@@ -299,7 +309,9 @@ const SigninPage = () => {
 
 
                     {/* Bottom Text */}
-
+                    <button onClick={handleGoogleLogin}>
+                        Continue with Google
+                    </button>
                     <p className="mt-6 text-center text-sm text-gray-500">
 
                         Don't have an account?{" "}
