@@ -25,12 +25,16 @@ import {
 
 import { authClient, signIn } from "@/lib/auth-client";
 import { useRouter } from "next/navigation";
+import toast from "react-hot-toast";
 
 const SigninPage = () => {
     const handleGoogleLogin = async () => {
         const { data, error } = await signIn.social({
             provider: "google",
         });
+        if(data){
+            toast.success('Sign in Complite')
+        }
 
         if (error) {
             console.error(error);
@@ -90,7 +94,7 @@ const SigninPage = () => {
             // ==========================================
 
             if (signInError) {
-                alert(signInError.message || "Invalid email or password");
+                toast.error(signInError.message || "Invalid email or password");
                 return;
             }
 
@@ -99,7 +103,7 @@ const SigninPage = () => {
             // ==========================================
 
             if (signInData) {
-                alert("Login successful!");
+                toast.success("Login successful!");
 
                 router.push("/");
                 router.refresh();

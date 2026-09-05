@@ -11,7 +11,7 @@ const Footer = () => {
         },
         {
             name: "Find Doctors",
-            href: "/doctors",
+            href: "/find-doctor",
         },
         {
             name: "About Us",
@@ -63,16 +63,16 @@ const Footer = () => {
                             <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-[#36C6A3] shadow-lg shadow-[#36C6A3]/20 transition-transform duration-300 group-hover:rotate-6">
 
                                 <span className="text-xl font-black text-[#071C1B]">
-                                    M
+                                    N
                                 </span>
 
                             </div>
 
                             <div>
                                 <h2 className="text-xl font-bold tracking-tight">
-                                    MediCare
+                                   Nova
                                     <span className="text-[#36C6A3]">
-                                        Connect
+                                        Care
                                     </span>
                                 </h2>
 

@@ -8,6 +8,7 @@ import {
     Heart,
     HeartPulse,
 } from "@gravity-ui/icons";
+import Link from "next/link";
 
 const Heropage = () => {
     return (
@@ -26,10 +27,13 @@ const Heropage = () => {
                     Streamlined clinical workflows boost efficiency, cut wait times,
                     and enable faster, patient-centered care experiences
                 </p>
+                <Link href={'/find-doctor'}>
+                    <button className="mt-7 rounded-md bg-[#064b78] px-6 py-3.5 text-[14px] font-semibold text-white transition hover:bg-[#053d61] sm:px-7 sm:py-4 sm:text-[15px]">
+                        Explore more
+                    </button>
+                </Link>
 
-                <button className="mt-7 rounded-md bg-[#064b78] px-6 py-3.5 text-[14px] font-semibold text-white transition hover:bg-[#053d61] sm:px-7 sm:py-4 sm:text-[15px]">
-                    Explore more
-                </button>
+
 
 
                 {/* Feature Cards */}
@@ -127,64 +131,6 @@ const Heropage = () => {
                 />
 
             </div>
-
-
-            {/* Patient Satisfaction Card */}
-            <div
-                className="
-          absolute
-          bottom-[125px]
-          right-[10px]
-          z-20
-          flex
-          h-[58px]
-          w-[290px]
-          items-center
-          rounded-lg
-          bg-white/85
-          px-4
-          backdrop-blur-sm
-
-          sm:bottom-[140px]
-          sm:right-[20px]
-          sm:h-[60px]
-          sm:w-[320px]
-
-          lg:bottom-[178px]
-          lg:right-[20px]
-          lg:h-[64px]
-          lg:w-[350px]
-          lg:px-5
-
-          xl:right-[35px]
-        "
-            >
-
-                {/* Avatar */}
-                <div className="flex -space-x-2">
-
-                    <div className="h-8 w-8 rounded-full border-2 border-white bg-gray-300 sm:h-9 sm:w-9" />
-                    <div className="h-8 w-8 rounded-full border-2 border-white bg-gray-400 sm:h-9 sm:w-9" />
-                    <div className="h-8 w-8 rounded-full border-2 border-white bg-gray-500 sm:h-9 sm:w-9" />
-                    <div className="h-8 w-8 rounded-full border-2 border-white bg-gray-300 sm:h-9 sm:w-9" />
-
-                </div>
-
-
-                <div className="ml-3 sm:ml-5">
-
-                    <div className="flex items-center gap-1 text-[15px] text-orange-400 sm:text-[17px] lg:text-[18px]">
-                        ★ ★ ★ ★ ★
-                    </div>
-
-                    <p className="text-[12px] font-medium text-[#064b78] sm:text-[13px] lg:text-[14px]">
-                        1k+ Satisfied patients
-                    </p>
-
-                </div>
-
-            </div>
-
 
             {/* Bottom Statistics */}
             <div

@@ -1,9 +1,10 @@
 import React from 'react';
+import UsersCard from './users/UsersCard';
 
 const page = () => {
     return (
         <div>
-            this is admin page 
+            <UsersCard></UsersCard>
         </div>
     );
 };

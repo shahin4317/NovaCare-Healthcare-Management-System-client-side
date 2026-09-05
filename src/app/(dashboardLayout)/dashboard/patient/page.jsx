@@ -1,9 +1,10 @@
 import React from 'react';
+import PatientOverviewCards from './overview/PatientOverviewCards';
 
 const patientPage = () => {
     return (
         <div>
-            <h1>this is patient</h1>
+            <PatientOverviewCards></PatientOverviewCards>
             
         </div>
     );

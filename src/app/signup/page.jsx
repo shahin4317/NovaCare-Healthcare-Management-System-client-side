@@ -25,13 +25,16 @@ import {
 } from "@heroui/react";
 
 import { authClient } from "@/lib/auth-client";
+import toast from "react-hot-toast";
+import { useRouter } from "next/navigation";
 
 
 
 
 const SignupPage = () => {
-  
-  
+    const router = useRouter()
+
+
     // ==========================================
     // States
     // ==========================================
@@ -139,8 +142,11 @@ const SignupPage = () => {
 
             } = await authClient.signUp.email(signupData);
             if (signUpData) {
-                alert('SignUp Success')
-                
+                toast.success('SignUp Success')
+                router.push("/");
+                router.refresh();
+
+
             }
             if (signUpError) {
                 alert(signUpError.message)

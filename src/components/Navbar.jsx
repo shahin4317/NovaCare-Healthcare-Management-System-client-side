@@ -241,15 +241,6 @@ const Navbar = () => {
                                 {/* DROPDOWN */}
                                 <div className="p-2">
 
-                                    <Link
-                                        href="/profile"
-                                        onClick={() =>
-                                            setProfileOpen(false)
-                                        }
-                                        className="block rounded-xl px-4 py-3 text-sm font-medium text-gray-700 hover:bg-[#f3f8fb]"
-                                    >
-                                        My Profile
-                                    </Link>
 
                                     {/* Dashboard */}
                                     <button
