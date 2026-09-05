@@ -26,7 +26,7 @@ const UsersCard = ({ users }) => {
             setDeletingId(userId);
 
             const response = await fetch(
-                `http://localhost:8000/api/user/${userId}`,
+                `https://nova-care-healthcare-management-sys.vercel.app/api/user/${userId}`,
                 {
                     method: "DELETE",
                 }

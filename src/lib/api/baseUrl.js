@@ -1,1 +1,1 @@
-export const baseUrl = 'http://localhost:8000'
+export const baseUrl = 'https://nova-care-healthcare-management-sys.vercel.app/api'
